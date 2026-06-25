@@ -3,7 +3,7 @@ import axios from "axios";
 // 🌐 URL-ஐச் சரியாக மாற்றியுள்ளேன் (jpb -> job)
 const BASE_URL = 
   import.meta.env.VITE_DB_HOST || 
-  "https://jobcenterback-production.up.railway.app";
+  "https://jpbcenterback-production.up.railway.app";
 
 // 🧹 URL-ல் தேவையில்லாத ' அல்லது " இருந்தால் நீக்குகிறது
 const API_BASE_URL = BASE_URL.replace(/['"]/g, "");

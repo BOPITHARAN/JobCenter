@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // 🌐 1. URL-ஐ எடுக்கிறோம் (ENV அல்லது Fallback)
-const RAW_URL = import.meta.env.VITE_API_URL || 'https://jobcenterback-production.up.railway.app';
+const RAW_URL = import.meta.env.VITE_API_URL || 'https://jpbcenterback-production.up.railway.app';
 
 // 🧹 2. தேவையில்லாத கொட்டேஷன்களை (Quotes) நீக்குகிறோம்
 const CLEAN_URL = RAW_URL.replace(/['"]/g, "");
