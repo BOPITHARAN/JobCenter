@@ -3,6 +3,7 @@ import api from "../../api/api"; // ✅ FIXED IMPORT (IMPORTANT)
 
 import { GoogleLogin } from "@react-oauth/google";
 import { useTranslation } from "react-i18next";
+import { supabase } from "../../api/supabaseClient";
 
 import {
   X,

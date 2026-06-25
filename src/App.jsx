@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { Routes, Route } from "react-router-dom";
-import axios from "axios";
+
+// 1. Axios-ஐ நீக்கிவிட்டு, நாம் உருவாக்கிய Supabase-ஐ import செய்கிறோம்
+import { supabase } from "./api/supabaseClient";
 
 import Navbar from "./components/Navbar/Navbar";
 import Hero from "./components/Hero/Hero";
@@ -24,9 +26,6 @@ import Privacy from "./components/Privacy/Privacy";
 
 import AdminPanel from "./admin/AdminPanel/AdminPanel";
 
-// Dynamic Backend Endpoint mapping
-const API_BASE_URL = import.meta.env.VITE_DB_HOST || "https://jpbcenterback-production.up.railway.app";
-
 function HomePage({
   user,
   setUser,
@@ -46,12 +45,12 @@ function HomePage({
         openAdmin={openAdminPanel}
       />
 
-      {/* 🌟 1. PREMIUM HERO SECTION: Integrated with central state jobs & search data router */}
+      {/* 🌟 1. PREMIUM HERO SECTION */}
       <section id="home">
         <Hero onSearch={handleHeroSearch} jobs={allJobs} />
       </section>
 
-      {/* 🌟 2. JOBS GRID LAYER: Positioned safely below Hero with live dynamic filter hooks */}
+      {/* 🌟 2. JOBS GRID LAYER */}
       <section id="jobs" className="relative z-20 -mt-8 md:-mt-12">
         <Jobs search={searchParams} />
         <AIJobs isAdmin={user?.role === "admin"} />
@@ -134,18 +133,22 @@ export default function App() {
     }
   });
 
-  // Fetch jobs dataset directly inside core controller layer to power both Hero & Jobs grid sync
+  // 2. Supabase மூலம் Jobs தரவுகளைப் பெறுகிறோம்
   useEffect(() => {
     const loadProductionJobsLogs = async () => {
       try {
-        const res = await axios.get(`${API_BASE_URL}/api/jobs`);
-        if (res.data && res.data.success) {
-          setAllJobs(res.data.data || []);
+        // உங்கள் டேட்டாபேஸில் உள்ள 'jobs' டேபிளில் இருந்து தரவுகளை எடுக்கிறோம்
+        const { data, error } = await supabase
+          .from('jobs')
+          .select('*');
+
+        if (error) {
+          console.error("Supabase Fetch Error:", error.message);
         } else {
-          setAllJobs(res.data || []);
+          setAllJobs(data || []);
         }
       } catch (error) {
-        console.error("Central Network Data Handshake Error:", error.message);
+        console.error("Unexpected Error:", error.message);
       }
     };
     loadProductionJobsLogs();
@@ -195,7 +198,7 @@ export default function App() {
     <Routes>
       <Route
         path="/"
-        element = {
+        element={
           <HomePage
             user={user}
             setUser={setUser}
@@ -213,7 +216,7 @@ export default function App() {
 
       <Route
         path="*"
-        element = {
+        element={
           <HomePage
             user={user}
             setUser={setUser}

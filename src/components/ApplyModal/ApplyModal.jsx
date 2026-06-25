@@ -1,5 +1,6 @@
 import { useState } from "react";
 import axios from "axios";
+import { supabase } from "../../api/supabaseClient";
 import {
   X,
   User,

@@ -2,6 +2,7 @@ import { useState } from "react";
 import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslation } from "react-i18next";
+import { supabase } from "../../api/supabaseClient";
 import {
   Mail,
   Phone,

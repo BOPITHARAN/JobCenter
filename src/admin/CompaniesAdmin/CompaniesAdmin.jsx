@@ -1,194 +1,193 @@
-import { useEffect, useState } from "react";
-import axios from "axios";
+import { useState } from "react";
+import { useTranslation } from "react-i18next";
+import { supabase } from "../../api/supabaseClient"; 
+import emailjs from "@emailjs/browser"; // ✅ EmailJS Import cheythu
 import {
-  Briefcase,
-  FileText,
-  Building2,
-  Users,
-  TrendingUp,
-  Activity,
-  Sparkles,
-  ArrowUpRight,
-  PlusCircle,
-  Newspaper,
-  RefreshCcw,
+  Mail,
+  BellRing,
+  ArrowRight,
+  CheckCircle2,
+  AlertCircle,
+  Info,
+  X,
 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
-/* ✅ SAFE ENV BASE URL */
-const API_BASE_URL =
-  import.meta.env?.VITE_API_URL ||
-  "https://jpbcenterback-production.up.railway.app";
+export default function Newsletter() {
+  const { t } = useTranslation();
 
-export default function Dashboard() {
-  const [dashboardStats, setDashboardStats] = useState({
-    jobs: 0,
-    applications: 0,
-    companies: 0,
-    candidates: 0,
-  });
-
+  const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
+  const [popup, setPopup] = useState(null);
 
-  /* ✅ SAFE FETCH */
-  const fetchStats = async () => {
+  const showPopup = (type, message) => {
+    setPopup({ type, message });
+    setTimeout(() => setPopup(null), 3000);
+  };
+
+  const isValidEmail = (email) =>
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
+  const subscribe = async (e) => {
+    e.preventDefault();
+    const trimmedEmail = email.trim();
+
+    if (!trimmedEmail) {
+      showPopup("error", t("enterEmail", "Please enter your email"));
+      return;
+    }
+
+    if (!isValidEmail(trimmedEmail)) {
+      showPopup("error", t("invalidEmail", "Enter a valid email address"));
+      return;
+    }
+
     try {
       setLoading(true);
 
-      const res = await axios.get(
-        `${API_BASE_URL}/api/dashboard/stats`
+      // 1. Supabase-lekku data insert cheyyunnu
+      const { error } = await supabase
+        .from("newsletter_subscribers")
+        .insert([{ email: trimmedEmail }]);
+
+      if (error) {
+        if (error.code === '23505') {
+          throw new Error(t("alreadySubscribed", "This email is already subscribed!"));
+        }
+        throw error;
+      }
+
+      // 2. ✅ Vijayakaramaayi save aayathinu sesham EmailJS vazhi automatic mail ayakkunnu
+      const templateParams = {
+        to_email: trimmedEmail, // Template-il ulla variable peru
+        message: "Thank you for subscribing to our newsletter! You will receive latest job alerts.",
+      };
+
+      await emailjs.send(
+        "YOUR_SERVICE_ID",   // ✅ EmailJS Service ID ivide nalkuka
+        "YOUR_TEMPLATE_ID",  // ✅ EmailJS Template ID ivide nalkuka
+        templateParams,
+        "YOUR_PUBLIC_KEY"    // ✅ EmailJS Public Key ivide nalkuka
       );
 
-      const data = res.data || {};
+      showPopup(
+        "success",
+        t("subscribedSuccess", "Subscribed successfully! Welcome email sent.")
+      );
 
-      setDashboardStats({
-        jobs: data.jobs ?? 0,
-        applications: data.applications ?? 0,
-        companies: data.companies ?? 0,
-        candidates: data.candidates ?? 0,
-      });
-    } catch (error) {
-      console.error("Dashboard error:", error);
-
-      setDashboardStats({
-        jobs: 0,
-        applications: 0,
-        companies: 0,
-        candidates: 0,
-      });
+      setEmail("");
+    } catch (err) {
+      console.error("Subscription/Email Error:", err.message);
+      const message = err.message || t("subscribeFailed", "Subscription failed");
+      showPopup("error", message);
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    fetchStats();
-  }, []);
-
-  const stats = [
-    {
-      title: "Total Jobs",
-      value: dashboardStats.jobs,
-      note: "Active vacancies",
-      icon: Briefcase,
-      color: "from-[#395886] to-[#638ECB]",
-    },
-    {
-      title: "Applications",
-      value: dashboardStats.applications,
-      note: "Received applications",
-      icon: FileText,
-      color: "from-[#638ECB] to-[#8AAEE0]",
-    },
-    {
-      title: "Companies",
-      value: dashboardStats.companies,
-      note: "Registered employers",
-      icon: Building2,
-      color: "from-[#395886] to-[#8AAEE0]",
-    },
-    {
-      title: "Candidates",
-      value: dashboardStats.candidates,
-      note: "Registered users",
-      icon: Users,
-      color: "from-[#638ECB] to-[#395886]",
-    },
-  ];
-
   return (
-    <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-[#F0F3FA] via-[#D5DEEF] to-[#B1C9EF] p-4 text-[#395886] md:p-6">
-
-      {/* background */}
-      <div className="pointer-events-none absolute -left-20 top-0 h-72 w-72 rounded-full bg-[#638ECB]/25 blur-[100px]" />
-      <div className="pointer-events-none absolute bottom-0 right-0 h-72 w-72 rounded-full bg-[#395886]/20 blur-[100px]" />
-
-      <div className="relative mx-auto max-w-[1400px] space-y-6">
-
-        {/* HEADER */}
-        <section className="rounded-[36px] bg-white/60 p-8 backdrop-blur-xl">
-          <p className="flex items-center gap-2 font-black">
-            <Sparkles /> Admin Dashboard
-          </p>
-
-          <h1 className="mt-4 text-5xl font-black">
-            Dashboard Overview
-          </h1>
-        </section>
-
-        {/* STATS */}
-        <section className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-          {stats.map((item) => {
-            const Icon = item.icon;
-
-            return (
-              <article
-                key={item.title}
-                className="rounded-[30px] bg-white/60 p-6 backdrop-blur-xl"
-              >
-                <div className="flex justify-between">
-                  <div
-                    className={`flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br ${item.color} text-white`}
-                  >
-                    <Icon />
-                  </div>
-
-                  <ArrowUpRight />
+    <>
+      <AnimatePresence>
+        {popup && (
+          <motion.div
+            initial={{ opacity: 0, y: -20, x: "-50%" }}
+            animate={{ opacity: 1, y: 0, x: "-50%" }}
+            exit={{ opacity: 0, y: -20, x: "-50%" }}
+            className="fixed left-1/2 top-5 z-[9999] w-[90%] max-w-sm"
+          >
+            <div className="rounded-[22px] border border-[#B1C9EF] bg-white p-4 shadow-lg">
+              <div className="flex items-center gap-3">
+                <div
+                  className={`flex h-10 w-10 items-center justify-center rounded-full ${
+                    popup.type === "success"
+                      ? "bg-green-100 text-green-600"
+                      : popup.type === "info"
+                      ? "bg-blue-100 text-blue-600"
+                      : "bg-red-100 text-red-600"
+                  }`}
+                >
+                  {popup.type === "success" ? (
+                    <CheckCircle2 size={18} />
+                  ) : popup.type === "info" ? (
+                    <Info size={18} />
+                  ) : (
+                    <AlertCircle size={18} />
+                  )}
                 </div>
 
-                <h2 className="mt-6 text-4xl font-black">
-                  {loading ? "..." : item.value}
+                <div className="flex-1">
+                  <h3 className="text-sm font-bold text-[#395886]">
+                    {popup.message}
+                  </h3>
+                </div>
+
+                <button onClick={() => setPopup(null)}>
+                  <X size={16} />
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <section className="relative overflow-hidden bg-[#F0F3FA] px-4 py-16">
+        <div className="relative mx-auto max-w-5xl">
+          <motion.div
+            initial={{ opacity: 0, y: 25 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="rounded-[34px] border border-white/70 bg-white/60 p-6 backdrop-blur-xl md:p-8"
+          >
+            <div className="grid items-center gap-8 lg:grid-cols-2">
+              <div>
+                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-[#395886] to-[#8AAEE0] text-white">
+                  <BellRing size={24} />
+                </div>
+
+                <h2 className="mt-5 text-3xl font-black text-[#395886]">
+                  {t("getPremium", "Get Premium")}{" "}
+                  <span className="text-[#638ECB]">
+                    {t("jobAlerts", "Job Alerts")}
+                  </span>
                 </h2>
 
-                <p className="mt-2 font-bold">{item.title}</p>
-
-                <p className="mt-2 flex items-center gap-2 text-sm text-green-600">
-                  <TrendingUp size={14} />
-                  {item.note}
+                <p className="mt-3 text-sm text-[#395886]/70">
+                  {t(
+                    "newsletterDescription",
+                    "Get latest job updates directly to your email."
+                  )}
                 </p>
-              </article>
-            );
-          })}
-        </section>
+              </div>
 
-        {/* PERFORMANCE */}
-        <section className="rounded-[30px] bg-white/60 p-6 backdrop-blur-xl">
+              <form onSubmit={subscribe}>
+                <div className="flex flex-col gap-3">
+                  <div className="flex items-center gap-3 rounded-2xl border bg-white px-4 py-3 focus-within:border-[#638ECB] focus-within:ring-2 focus-within:ring-[#638ECB]/10 transition-all">
+                    <Mail size={18} className="text-[#638ECB]" />
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder={t("emailAddress", "Email address")}
+                      className="w-full outline-none bg-transparent text-[#395886] placeholder:text-[#395886]/50 font-medium"
+                    />
+                  </div>
 
-          <button
-            onClick={fetchStats}
-            disabled={loading}
-            className="flex items-center gap-2 rounded-xl bg-[#395886] px-4 py-2 text-white"
-          >
-            <RefreshCcw className={loading ? "animate-spin" : ""} />
-            Refresh
-          </button>
-
-          <div className="mt-6 space-y-4">
-            <Progress label="Jobs" value="82%" />
-            <Progress label="Applications" value="74%" />
-            <Progress label="Companies" value="68%" />
-          </div>
-        </section>
-
-      </div>
-    </div>
-  );
-}
-
-/* ✅ PROGRESS */
-function Progress({ label, value }) {
-  return (
-    <div>
-      <div className="flex justify-between font-bold">
-        <span>{label}</span>
-        <span>{value}</span>
-      </div>
-
-      <div className="h-3 rounded-full bg-white/70">
-        <div
-          className="h-3 rounded-full bg-gradient-to-r from-[#395886] to-[#8AAEE0]"
-          style={{ width: value }}
-        />
-      </div>
-    </div>
+                  <button
+                    type="submit"
+                    disabled={loading || !email.trim()}
+                    className="flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#395886] to-[#638ECB] hover:shadow-[0_10px_25px_rgba(99,142,203,0.35)] hover:-translate-y-1 py-3.5 text-white font-bold transition-all disabled:opacity-60"
+                  >
+                    {loading
+                      ? t("loading", "Loading...")
+                      : t("subscribe", "Subscribe")}
+                    <ArrowRight size={16} />
+                  </button>
+                </div>
+              </form>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+    </>
   );
 }

@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Building2, Sparkles, BadgeCheck } from "lucide-react";
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { supabase } from "../../api/supabaseClient";
 
 export default function Companies() {
   const { t } = useTranslation();

@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
 import { useTranslation } from "react-i18next";
+import { supabase } from "../../api/supabaseClient"; // ✅ Supabase Imported (Axios Removed)
 
 import {
+  Clock,
   MapPin,
   Heart,
   SearchX,
@@ -13,9 +14,6 @@ import {
 } from "lucide-react";
 
 import ApplyModal from "../ApplyModal/ApplyModal";
-
-const API_BASE_URL =
-  "https://jpbcenterback-production.up.railway.app";
 
 export default function Jobs({ search }) {
   const { t } = useTranslation();
@@ -31,226 +29,232 @@ export default function Jobs({ search }) {
     fetchJobs();
   }, []);
 
-  // =====================
-  // FETCH JOBS (ULTRA SAFE)
-  // =====================
+  // 🚀 SUPABASE FETCH JOBS
   const fetchJobs = async () => {
     try {
       setLoading(true);
 
-      const res = await axios.get(
-        `${API_BASE_URL}/api/jobs`
-      );
+      const { data, error } = await supabase
+        .from("jobs")
+        .select("*")
+        .order("created_at", { ascending: false });
 
-      console.log("RAW RESPONSE:", res.data);
+      if (error) {
+        console.error("SUPABASE FETCH ERROR:", error);
+        throw error;
+      }
 
-      // 🔥 MULTI-LAYER SAFE PARSING
-      let data = res?.data;
-
-      if (data?.data) data = data.data;
-      if (data?.jobs) data = data.jobs;
-
-      const safeJobs = Array.isArray(data) ? data : [];
-
-      setJobs(safeJobs);
+      console.log("Supabase Data Received:", data);
+      setJobs(data || []);
     } catch (error) {
-      console.log("FETCH JOBS ERROR:", error.message);
+      console.log("FETCH JOBS CATCH ERROR:", error.message);
       setJobs([]);
     } finally {
       setLoading(false);
     }
   };
 
-  // =====================
-  // SAVE JOB
-  // =====================
+  // 💾 SUPABASE SAVE JOB
   const saveJob = async (jobId) => {
     if (!user) {
-      alert("Please login first");
+      alert(t("loginFirst", "Please login first"));
       return;
     }
 
     try {
-      // ✅ Added headers to prevent CORS issues on POST request
-      await axios.post(
-        `${API_BASE_URL}/api/saved-jobs`,
-        {
-          user_id: user.id || user._id,
-          job_id: jobId,
-        },
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      // 'saved_jobs' என்ற டேபிளில் டேட்டாவை சேமிக்கிறோம்
+      const { error } = await supabase
+        .from("saved_jobs")
+        .insert([{ user_id: user.id, job_id: jobId }]);
+
+      if (error) throw error;
 
       setSavedJobs((prev) => [...prev, jobId]);
-      alert("Job saved successfully");
+      alert(t("jobSaved", "Job saved successfully"));
     } catch (error) {
-      alert(
-        error.response?.data?.message || "Save failed"
-      );
+      console.error("SAVE JOB ERROR:", error);
+      alert(t("saveFailed", "Save failed. Ensure 'saved_jobs' table exists in Supabase."));
     }
   };
 
-  // =====================
-  // FILTER (SAFE)
-  // =====================
+  // 🔍 FILTER LOGIC
   const filteredJobs = (jobs || []).filter((job) => {
     if (!job) return false;
 
-    const keyword =
-      search?.keyword?.toLowerCase() || "";
-    const location =
-      search?.location?.toLowerCase() || "";
+    const keyword = search?.keyword?.trim().toLowerCase() || "";
+    const location = search?.location?.trim().toLowerCase() || "";
 
-    const title =
-      job?.title?.toLowerCase() || "";
-    const company =
-      job?.company?.toLowerCase() || "";
-    const jobLocation =
-      job?.location?.toLowerCase() || "";
+    const title = job.title?.toLowerCase() || "";
+    const company = job.company?.toLowerCase() || "";
+    const jobLocation = job.location?.toLowerCase() || "";
+    const category = job.category?.toLowerCase() || "";
 
     const matchKeyword =
       keyword === "" ||
       title.includes(keyword) ||
-      company.includes(keyword);
+      company.includes(keyword) ||
+      category.includes(keyword);
 
     const matchLocation =
       location === "" ||
+      location === "sri lanka" ||
       jobLocation.includes(location);
 
     return matchKeyword && matchLocation;
   });
 
   return (
-    <section className="bg-[#F0F3FA] px-4 py-20">
-      <div className="mx-auto max-w-7xl">
+    <section
+      id="jobs"
+      className="relative overflow-hidden bg-[#F0F3FA] px-4 py-20"
+    >
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-[#F0F3FA] via-[#D5DEEF] to-[#B1C9EF]" />
+      <div className="pointer-events-none absolute -left-32 top-10 h-[340px] w-[340px] rounded-full bg-[#8AAEE0]/35 blur-[120px]" />
+      <div className="pointer-events-none absolute bottom-10 right-0 h-[340px] w-[340px] rounded-full bg-[#638ECB]/25 blur-[120px]" />
 
-        {/* HEADER */}
-        <div className="text-center">
-          <div className="inline-flex items-center gap-2 rounded-full bg-white/70 px-4 py-2 text-xs font-black text-[#395886]">
+      <div className="relative z-10 mx-auto max-w-7xl">
+        <div className="mx-auto max-w-3xl text-center">
+          <div className="mx-auto mb-4 inline-flex items-center gap-2 rounded-full border border-[#B1C9EF] bg-white/70 px-4 py-2 text-[11px] font-black uppercase tracking-[0.2em] text-[#395886] shadow-[0_10px_25px_rgba(57,88,134,0.10)] backdrop-blur-xl">
             <BriefcaseBusiness size={14} />
             {t("jobs", "Jobs")}
           </div>
 
-          <h2 className="mt-4 text-4xl font-black text-[#395886]">
-            {t("recent", "Recent Jobs")}
+          <h2 className="text-3xl font-black leading-tight text-[#395886] md:text-5xl">
+            {t("recent", "Recent")}{" "}
+            <span className="bg-gradient-to-r from-[#395886] via-[#638ECB] to-[#8AAEE0] bg-clip-text text-transparent">
+              {t("jobs", "Jobs")}
+            </span>
           </h2>
+
+          <p className="mx-auto mt-4 max-w-xl text-sm font-semibold leading-6 text-[#395886]/70">
+            {t("findApply", "Find and apply for the best jobs easily.")}
+          </p>
         </div>
 
-        {/* LOADING */}
         {loading ? (
-          <div className="mt-12 flex flex-col items-center">
-            <RefreshCw
-              className="animate-spin text-[#395886]"
-              size={40}
-            />
-            <p className="mt-3 font-bold text-[#395886]">
-              Loading...
-            </p>
+          <div className="mx-auto mt-12 flex max-w-xl flex-col items-center justify-center rounded-[28px] border border-[#D5DEEF] bg-white/75 p-10 text-center shadow-[0_20px_50px_rgba(57,88,134,.12)] backdrop-blur-xl">
+            <RefreshCw className="animate-spin text-[#395886]" size={42} />
+
+            <h2 className="mt-5 text-2xl font-black text-[#395886]">
+              {t("loading", "Loading...")}
+            </h2>
           </div>
         ) : filteredJobs.length === 0 ? (
-          // EMPTY STATE
-          <div className="mt-12 text-center">
-            <SearchX
-              size={50}
-              className="mx-auto text-[#395886]"
-            />
+          <div className="mx-auto mt-12 flex max-w-xl flex-col items-center justify-center rounded-[28px] border border-[#D5DEEF] bg-white/75 p-10 text-center shadow-[0_20px_50px_rgba(57,88,134,.12)] backdrop-blur-xl">
+            <div className="rounded-3xl bg-[#D5DEEF] p-5 text-[#395886]">
+              <SearchX size={46} />
+            </div>
 
-            <h2 className="mt-4 text-2xl font-black text-[#395886]">
-              No Jobs Found
+            <h2 className="mt-5 text-2xl font-black text-[#395886]">
+              {t("noJobs", "No Jobs Found")}
             </h2>
 
+            <p className="mt-2 max-w-sm text-sm leading-6 text-[#395886]/70">
+              {t("tryKeyword", "Try another keyword or location.")}
+            </p>
+
             <button
+              type="button"
               onClick={fetchJobs}
-              className="mt-4 rounded-xl bg-[#395886] px-5 py-2 text-white"
+              className="mt-5 rounded-2xl bg-gradient-to-r from-[#395886] via-[#638ECB] to-[#8AAEE0] px-6 py-3 text-sm font-black text-white shadow-[0_14px_30px_rgba(57,88,134,.25)] transition hover:scale-[1.03]"
             >
-              Refresh Jobs
+              {t("refreshJobs", "Refresh Jobs")}
             </button>
           </div>
         ) : (
-          // JOB GRID
-          <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-
-            {filteredJobs.map((job, index) => {
-              const jobId =
-                job?.id || job?._id || index;
-
-              const isSaved =
-                savedJobs.includes(jobId);
+          <div className="mt-12 grid items-stretch gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {filteredJobs.map((job) => {
+              const isSaved = savedJobs.includes(job.id);
 
               return (
-                <div
-                  key={jobId}
-                  className="rounded-2xl bg-white p-5 shadow"
+                <article
+                  key={job.id}
+                  className="group relative flex min-h-[370px] flex-col overflow-hidden rounded-[28px] border border-[#D5DEEF] bg-white/80 p-5 shadow-[0_15px_40px_rgba(57,88,134,.12)] backdrop-blur-xl transition duration-500 hover:-translate-y-2 hover:border-[#638ECB] hover:bg-white"
                 >
+                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-[#F0F3FA] via-[#B1C9EF] to-[#638ECB] opacity-0 transition duration-700 group-hover:opacity-25" />
+                  <div className="pointer-events-none absolute -right-16 -top-16 h-36 w-36 rounded-full bg-[#8AAEE0]/35 blur-3xl" />
 
-                  {/* COMPANY */}
-                  <div className="flex items-center gap-2 text-[#638ECB]">
-                    <Building2 size={16} />
-                    <span className="text-xs font-bold">
-                      {job?.company || "Company"}
+                  <div className="relative z-10 flex items-start justify-between gap-3">
+                    <span className="inline-flex max-w-[52%] items-center gap-1.5 truncate rounded-full bg-[#F0F3FA] px-3 py-1.5 text-[11px] font-bold text-[#395886]/75">
+                      <Clock size={12} className="shrink-0" />
+                      <span className="truncate">
+                        {job.days_left || t("new", "New")}
+                      </span>
+                    </span>
+
+                    <span className="max-w-[45%] truncate rounded-full bg-[#D5DEEF] px-3 py-1.5 text-[11px] font-black text-[#395886]">
+                      {job.type || t("fullTime", "Full Time")}
                     </span>
                   </div>
 
-                  {/* TITLE */}
-                  <h3 className="mt-2 text-lg font-black text-[#395886]">
-                    {job?.title || "Job Title"}
+                  <div className="relative z-10 mt-5 flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-r from-[#8AAEE0] via-[#638ECB] to-[#395886] text-white shadow-[0_14px_30px_rgba(57,88,134,.25)]">
+                    <Building2 size={22} />
+                  </div>
+
+                  <p className="relative z-10 mt-4 line-clamp-1 text-xs font-bold uppercase tracking-[0.16em] text-[#638ECB]">
+                    {job.company || t("company", "Company")}
+                  </p>
+
+                  <h3 className="relative z-10 mt-2 line-clamp-2 min-h-[56px] text-lg font-black leading-7 text-[#395886]">
+                    {job.title || t("jobTitle", "Job Title")}
                   </h3>
 
-                  {/* LOCATION */}
-                  <p className="mt-1 flex items-center gap-1 text-sm text-gray-600">
-                    <MapPin size={14} />
-                    {job?.location || "Sri Lanka"}
+                  <p className="relative z-10 mt-2 flex min-h-[24px] items-center gap-2 text-sm font-semibold text-[#395886]/70">
+                    <MapPin size={14} className="shrink-0 text-[#638ECB]" />
+                    <span className="line-clamp-1">
+                      {job.location || "Sri Lanka"}
+                    </span>
                   </p>
 
-                  {/* SALARY */}
-                  <p className="mt-2 text-sm font-bold text-[#638ECB]">
-                    {job?.salary || "Negotiable"}
+                  <p className="relative z-10 mt-3 line-clamp-1 text-sm font-black text-[#638ECB]">
+                    {job.salary || t("negotiable", "Negotiable")}
                   </p>
 
-                  {/* SAVE BUTTON */}
-                  <button
-                    onClick={() => saveJob(jobId)}
-                    disabled={isSaved}
-                    className={`mt-4 flex w-full items-center justify-center gap-2 rounded-xl px-4 py-2 text-sm font-bold ${
-                      isSaved
-                        ? "bg-gray-200 text-gray-600"
-                        : "bg-[#D5DEEF] text-[#395886]"
-                    }`}
-                  >
-                    <Heart size={14} />
-                    {isSaved ? "Saved" : "Save Job"}
-                  </button>
+                  <div className="relative z-10 mt-auto pt-5">
+                    <button
+                      type="button"
+                      disabled={isSaved}
+                      onClick={() => saveJob(job.id)}
+                      className={`flex w-full items-center justify-center gap-2 rounded-2xl border px-4 py-3 text-sm font-black transition ${
+                        isSaved
+                          ? "border-[#638ECB] bg-[#D5DEEF] text-[#395886]"
+                          : "border-[#B1C9EF] bg-white/70 text-[#395886] hover:bg-[#F0F3FA]"
+                      }`}
+                    >
+                      <Heart
+                        size={15}
+                        fill={isSaved ? "#395886" : "none"}
+                      />
 
-                  {/* APPLY BUTTON */}
-                  <button
-                    onClick={() =>
-                      setSelectedJob(job)
-                    }
-                    className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl bg-[#395886] px-4 py-2 text-sm font-bold text-white"
-                  >
-                    Apply
-                    <ArrowRight size={14} />
-                  </button>
+                      <span className="truncate">
+                        {isSaved
+                          ? t("saved", "Saved")
+                          : t("saveJob", "Save Job")}
+                      </span>
+                    </button>
 
-                </div>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedJob(job)}
+                      className="mt-3 flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#638ECB] to-[#395886] px-4 py-3 text-sm font-black text-white shadow-[0_14px_30px_rgba(57,88,134,.25)] transition hover:scale-[1.02]"
+                    >
+                      <span className="truncate">
+                        {t("applyNow", "Apply Now")}
+                      </span>
+                      <ArrowRight size={15} />
+                    </button>
+                  </div>
+                </article>
               );
             })}
-
           </div>
         )}
       </div>
 
-      {/* APPLY MODAL */}
       {selectedJob && (
         <ApplyModal
           job={selectedJob}
-          onClose={() =>
-            setSelectedJob(null)
-          }
+          onClose={() => setSelectedJob(null)}
         />
       )}
     </section>
