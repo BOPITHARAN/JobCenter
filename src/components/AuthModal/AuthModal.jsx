@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import api from "../../api/api";
 import { GoogleLogin } from "@react-oauth/google";
 import { useTranslation } from "react-i18next";
@@ -22,12 +22,21 @@ export default function AuthModal({ onClose = () => {}, setUser = () => {} }) {
   const [googleLoading, setGoogleLoading] = useState(false);
   const [popup, setPopup] = useState(null);
 
+  const timerRef = useRef(null);
+
   // =====================
-  // POPUP
+  // POPUP SAFE HANDLER
   // =====================
   const showPopup = (type, message) => {
     setPopup({ type, message });
-    setTimeout(() => setPopup(null), 2500);
+
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+    }
+
+    timerRef.current = setTimeout(() => {
+      setPopup(null);
+    }, 2500);
   };
 
   // =====================
@@ -38,7 +47,7 @@ export default function AuthModal({ onClose = () => {}, setUser = () => {} }) {
       throw new Error("Invalid login response");
     }
 
-    localStorage.setItem("auth_token", data.token);
+    localStorage.setItem("token", data.token);
     localStorage.setItem("user", JSON.stringify(data.user));
 
     setUser(data.user);
@@ -48,8 +57,11 @@ export default function AuthModal({ onClose = () => {}, setUser = () => {} }) {
   // REDIRECT
   // =====================
   const redirectByRole = (user) => {
-    window.location.href =
-      user?.role === "admin" ? "/admin-dashboard" : "/";
+    if (user?.role === "admin") {
+      window.location.href = "/admin-dashboard";
+    } else {
+      window.location.href = "/";
+    }
   };
 
   // =====================
@@ -70,22 +82,24 @@ export default function AuthModal({ onClose = () => {}, setUser = () => {} }) {
         phone: cleanPhone,
       });
 
-      if (!res?.data?.token || !res?.data?.user) {
+      const data = res?.data;
+
+      if (!data?.token || !data?.user) {
         throw new Error("Invalid server response");
       }
 
-      saveLogin(res.data);
+      saveLogin(data);
       showPopup("success", t("auth.loginSuccess"));
 
       setTimeout(() => {
         onClose();
-        redirectByRole(res.data.user);
+        redirectByRole(data.user);
       }, 700);
     } catch (err) {
       console.error(err);
       showPopup(
         "error",
-        err.response?.data?.message || t("auth.phoneFailed")
+        err?.response?.data?.message || t("auth.phoneFailed")
       );
     } finally {
       setPhoneLoading(false);
@@ -108,22 +122,24 @@ export default function AuthModal({ onClose = () => {}, setUser = () => {} }) {
         token: credentialResponse.credential,
       });
 
-      if (!res?.data?.token || !res?.data?.user) {
+      const data = res?.data;
+
+      if (!data?.token || !data?.user) {
         throw new Error("Invalid Google response");
       }
 
-      saveLogin(res.data);
+      saveLogin(data);
       showPopup("success", t("auth.googleSuccess"));
 
       setTimeout(() => {
         onClose();
-        redirectByRole(res.data.user);
+        redirectByRole(data.user);
       }, 700);
     } catch (err) {
       console.error(err);
       showPopup(
         "error",
-        err.response?.data?.message || t("auth.googleFailed")
+        err?.response?.data?.message || t("auth.googleFailed")
       );
     } finally {
       setGoogleLoading(false);
@@ -132,6 +148,7 @@ export default function AuthModal({ onClose = () => {}, setUser = () => {} }) {
 
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-[#395886]/50 p-4 backdrop-blur-xl">
+
       {/* POPUP */}
       <AnimatePresence>
         {popup && (
