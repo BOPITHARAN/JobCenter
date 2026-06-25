@@ -1,5 +1,6 @@
-import { useState, useRef } from "react";
-import api from "../../api/api";
+import { useState } from "react";
+import api from "../../api/api"; // ✅ FIXED IMPORT (IMPORTANT)
+
 import { GoogleLogin } from "@react-oauth/google";
 import { useTranslation } from "react-i18next";
 
@@ -18,30 +19,16 @@ export default function AuthModal({ onClose = () => {}, setUser = () => {} }) {
   const { t } = useTranslation();
 
   const [phone, setPhone] = useState("");
-  const [phoneLoading, setPhoneLoading] = useState(false);
-  const [googleLoading, setGoogleLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [popup, setPopup] = useState(null);
 
-  const timerRef = useRef(null);
-
-  // =====================
-  // POPUP SAFE HANDLER
-  // =====================
+  // 🔔 popup message
   const showPopup = (type, message) => {
     setPopup({ type, message });
-
-    if (timerRef.current) {
-      clearTimeout(timerRef.current);
-    }
-
-    timerRef.current = setTimeout(() => {
-      setPopup(null);
-    }, 2500);
+    setTimeout(() => setPopup(null), 2600);
   };
 
-  // =====================
-  // SAVE LOGIN
-  // =====================
+  // 💾 save login
   const saveLogin = (data) => {
     if (!data?.token || !data?.user) {
       throw new Error("Invalid login response");
@@ -49,13 +36,10 @@ export default function AuthModal({ onClose = () => {}, setUser = () => {} }) {
 
     localStorage.setItem("token", data.token);
     localStorage.setItem("user", JSON.stringify(data.user));
-
     setUser(data.user);
   };
 
-  // =====================
-  // REDIRECT
-  // =====================
+  // 🔁 redirect
   const redirectByRole = (user) => {
     if (user?.role === "admin") {
       window.location.href = "/admin-dashboard";
@@ -64,51 +48,45 @@ export default function AuthModal({ onClose = () => {}, setUser = () => {} }) {
     }
   };
 
-  // =====================
-  // PHONE LOGIN
-  // =====================
+  // 📱 PHONE LOGIN
   const handlePhoneLogin = async () => {
     const cleanPhone = phone.trim();
 
-    if (!/^\d{9,15}$/.test(cleanPhone)) {
+    if (!/^[0-9]{10}$/.test(cleanPhone)) {
       showPopup("error", t("auth.phoneError"));
       return;
     }
 
     try {
-      setPhoneLoading(true);
+      setLoading(true);
+
+      console.log("📡 PHONE LOGIN API CALL");
 
       const res = await api.post("/api/auth/phone", {
         phone: cleanPhone,
       });
 
-      const data = res?.data;
+      console.log("✅ RESPONSE:", res.data);
 
-      if (!data?.token || !data?.user) {
-        throw new Error("Invalid server response");
-      }
-
-      saveLogin(data);
+      saveLogin(res.data);
       showPopup("success", t("auth.loginSuccess"));
 
       setTimeout(() => {
         onClose();
-        redirectByRole(data.user);
+        redirectByRole(res.data.user);
       }, 700);
     } catch (err) {
-      console.error(err);
+      console.error("❌ Login Error:", err);
       showPopup(
         "error",
-        err?.response?.data?.message || t("auth.phoneFailed")
+        err.response?.data?.message || t("auth.phoneFailed")
       );
     } finally {
-      setPhoneLoading(false);
+      setLoading(false);
     }
   };
 
-  // =====================
-  // GOOGLE LOGIN
-  // =====================
+  // 🌐 GOOGLE LOGIN
   const handleGoogleLogin = async (credentialResponse) => {
     try {
       if (!credentialResponse?.credential) {
@@ -116,40 +94,36 @@ export default function AuthModal({ onClose = () => {}, setUser = () => {} }) {
         return;
       }
 
-      setGoogleLoading(true);
+      setLoading(true);
+
+      console.log("📡 GOOGLE LOGIN API CALL");
 
       const res = await api.post("/api/auth/google", {
         token: credentialResponse.credential,
       });
 
-      const data = res?.data;
+      console.log("✅ RESPONSE:", res.data);
 
-      if (!data?.token || !data?.user) {
-        throw new Error("Invalid Google response");
-      }
-
-      saveLogin(data);
+      saveLogin(res.data);
       showPopup("success", t("auth.googleSuccess"));
 
       setTimeout(() => {
         onClose();
-        redirectByRole(data.user);
+        redirectByRole(res.data.user);
       }, 700);
     } catch (err) {
-      console.error(err);
+      console.error("❌ Google Login Error:", err);
       showPopup(
         "error",
-        err?.response?.data?.message || t("auth.googleFailed")
+        err.response?.data?.message || t("auth.googleFailed")
       );
     } finally {
-      setGoogleLoading(false);
+      setLoading(false);
     }
   };
 
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-[#395886]/50 p-4 backdrop-blur-xl">
-
-      {/* POPUP */}
       <AnimatePresence>
         {popup && (
           <motion.div
@@ -179,7 +153,7 @@ export default function AuthModal({ onClose = () => {}, setUser = () => {} }) {
         exit={{ opacity: 0, scale: 0.88, y: 35 }}
         className="relative w-full max-w-sm rounded-[34px] bg-white/90 p-6 shadow-xl backdrop-blur-2xl"
       >
-        {/* CLOSE */}
+        {/* CLOSE BUTTON */}
         <button
           onClick={onClose}
           className="absolute right-4 top-4 rounded-full bg-white p-2 shadow"
@@ -198,11 +172,9 @@ export default function AuthModal({ onClose = () => {}, setUser = () => {} }) {
           </h1>
         </div>
 
-        {/* PHONE */}
+        {/* PHONE INPUT */}
         <div className="mt-6">
-          <label className="text-xs font-bold">
-            {t("auth.phoneNumber")}
-          </label>
+          <label className="text-xs font-bold">{t("auth.phoneNumber")}</label>
 
           <div className="mt-2 flex items-center gap-2 rounded-xl border p-3">
             <Phone size={18} />
@@ -210,11 +182,8 @@ export default function AuthModal({ onClose = () => {}, setUser = () => {} }) {
               type="tel"
               value={phone}
               onChange={(e) =>
-                setPhone(e.target.value.replace(/\D/g, "").slice(0, 15))
+                setPhone(e.target.value.replace(/\D/g, "").slice(0, 10))
               }
-              onKeyDown={(e) => {
-                if (e.key === "Enter") handlePhoneLogin();
-              }}
               className="w-full outline-none"
               placeholder={t("auth.phonePlaceholder")}
             />
@@ -222,10 +191,10 @@ export default function AuthModal({ onClose = () => {}, setUser = () => {} }) {
 
           <button
             onClick={handlePhoneLogin}
-            disabled={phoneLoading}
+            disabled={loading}
             className="mt-4 w-full rounded-xl bg-[#395886] py-3 font-bold text-white"
           >
-            {phoneLoading ? (
+            {loading ? (
               <Loader2 className="mx-auto animate-spin" />
             ) : (
               t("auth.continue")
@@ -233,11 +202,13 @@ export default function AuthModal({ onClose = () => {}, setUser = () => {} }) {
           </button>
         </div>
 
-        {/* GOOGLE */}
+        {/* GOOGLE LOGIN */}
         <div className="mt-5">
           <GoogleLogin
             onSuccess={handleGoogleLogin}
-            onError={() => showPopup("error", t("auth.googleFailed"))}
+            onError={() =>
+              showPopup("error", t("auth.googleFailed"))
+            }
           />
         </div>
       </motion.div>
