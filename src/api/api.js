@@ -1,9 +1,12 @@
 import axios from "axios";
 
-// 🌐 API BASE URL (ENV + FALLBACK SAFETY)
-const API_BASE_URL =
+// 🌐 GET RAW URL (ENV + FALLBACK)
+const RAW_URL =
   import.meta.env.VITE_DB_HOST ||
   "https://jpbcenterback-production.up.railway.app";
+
+// 🧹 SANITIZE URL (Netlify-ல் இருந்து வரும் தேவையில்லாத "" கொட்டேஷன்களை நீக்குகிறது)
+const API_BASE_URL = RAW_URL.replace(/['"]/g, "");
 
 console.log("🔥 API BASE URL:", API_BASE_URL);
 
