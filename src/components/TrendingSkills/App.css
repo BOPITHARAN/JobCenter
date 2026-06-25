@@ -1,0 +1,61 @@
+html{
+  font-size:50%;
+}
+
+.counter{
+  font-size:12px;
+  padding:3px 6px;
+}
+
+.hero .base{
+  width:85px;
+}
+
+.hero .framework{
+  height:14px;
+  top:17px;
+}
+
+.hero .vite{
+  height:13px;
+  top:54px;
+}
+
+#center{
+  gap:12px;
+}
+
+#next-steps > div{
+  padding:16px;
+}
+
+#next-steps .icon{
+  width:12px;
+  height:12px;
+}
+
+#next-steps ul a{
+  font-size:10px;
+  padding:4px 8px;
+}
+
+#spacer{
+  height:40px;
+}
+
+@media(max-width:768px){
+
+html{
+   font-size:45%;
+}
+
+#center{
+   gap:8px;
+}
+
+}
+#root{
+    transform:scale(0.80);
+    transform-origin:top left;
+    width:125%;
+}

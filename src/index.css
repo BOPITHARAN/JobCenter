@@ -1,0 +1,153 @@
+@import "tailwindcss";
+
+* {
+  font-family: "Inter", "Segoe UI", sans-serif;
+}
+
+body {
+  margin: 0;
+  background: #f6f4ee;
+}
+
+.applyOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  background: rgba(2, 6, 23, 0.75);
+  backdrop-filter: blur(10px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+.applyModal {
+  width: 100%;
+  max-width: 560px;
+  background: white;
+  border-radius: 28px;
+  padding: 35px;
+  position: relative;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.35);
+  animation: modalPop 0.35s ease;
+}
+
+@keyframes modalPop {
+  from {
+    opacity: 0;
+    transform: translateY(40px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.closeBtn {
+  position: absolute;
+  right: 22px;
+  top: 22px;
+  border: none;
+  background: #f1f5f9;
+  color: #0f172a;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+}
+
+.applyHeader {
+  margin-bottom: 25px;
+}
+
+.applyHeader span {
+  display: inline-block;
+  background: linear-gradient(135deg, #ffc928, #7bcf00);
+  color: #0c2d57;
+  padding: 9px 16px;
+  border-radius: 999px;
+  font-weight: 900;
+  font-size: 13px;
+  margin-bottom: 14px;
+}
+
+.applyHeader h1 {
+  font-size: 32px;
+  color: #0b3c8a;
+  margin-bottom: 8px;
+}
+
+.applyHeader p {
+  color: #64748b;
+  font-weight: 700;
+}
+
+.applyForm {
+  display: grid;
+  gap: 16px;
+}
+
+.inputGroup label {
+  display: block;
+  font-size: 14px;
+  font-weight: 800;
+  color: #334155;
+  margin-bottom: 8px;
+}
+
+.inputGroup input,
+.inputGroup textarea {
+  width: 100%;
+  border: 1px solid #dbe4ee;
+  border-radius: 16px;
+  padding: 15px 16px;
+  font-size: 15px;
+  outline: none;
+  transition: 0.3s;
+}
+
+.inputGroup textarea {
+  height: 110px;
+  resize: none;
+}
+
+.inputGroup input:focus,
+.inputGroup textarea:focus {
+  border-color: #1d71f2;
+  box-shadow: 0 0 0 4px rgba(29, 113, 242, 0.12);
+}
+
+.submitBtn {
+  margin-top: 10px;
+  border: none;
+  background: linear-gradient(135deg, #0b3c8a, #1d71f2);
+  color: white;
+  padding: 16px;
+  border-radius: 18px;
+  font-size: 16px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.submitBtn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 14px 30px rgba(11, 60, 138, 0.25);
+}
+
+.submitBtn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -40px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}

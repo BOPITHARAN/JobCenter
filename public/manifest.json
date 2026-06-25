@@ -1,0 +1,21 @@
+{
+  "name": "JobCenter Plus",
+  "short_name": "JobCenter+",
+  "description": "KILI PEOPLE JobCenter Plus - Premium Job Portal",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#344f52",
+  "theme_color": "#344f52",
+  "icons": [
+    {
+      "src": "/logo.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
