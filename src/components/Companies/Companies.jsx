@@ -2,24 +2,26 @@ import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import { Building2, Sparkles, BadgeCheck } from "lucide-react";
 import { useEffect, useState } from "react";
+import axios from "axios";
 
 export default function Companies() {
   const { t } = useTranslation();
   const [companies, setCompanies] = useState([]);
 
-  const API = "https://jpbcenterback-production.up.railway.app/api/companies";
+  // ✅ Updated to include the full API endpoint
+  const API_URL = "https://jpbcenterback-production.up.railway.app/api/companies";
 
   const loadCompanies = async () => {
     try {
-      const res = await fetch(API);
-      const result = await res.json();
+      const res = await axios.get(API_URL);
+      
+      console.log("API Response:", res.data);
 
-      console.log("API Response:", result);
-
-      // FIX: Backend { success: true, data: [...] } nu anuppuradhala 
-      // result.data irukkanu check பண்ணி set panrom.
-      if (result && result.success && Array.isArray(result.data)) {
-        setCompanies(result.data);
+      // ✅ Safe parsing check: { success: true, data: [...] }
+      if (res.data && res.data.success && Array.isArray(res.data.data)) {
+        setCompanies(res.data.data);
+      } else if (Array.isArray(res.data)) {
+        setCompanies(res.data);
       } else {
         setCompanies([]);
       }
@@ -60,16 +62,15 @@ export default function Companies() {
             </p>
           ) : (
             companies
-              .filter((c) => c && c.id) // ID illadha broken items-ai remove panni 'null' key error-ai thadukkum
+              .filter((c) => c && (c.id || c._id)) // ID checking
               .map((c) => (
                 <motion.div
-                  key={c.id}
+                  key={c.id || c._id}
                   initial={{ opacity: 0, y: 25 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   className="group relative overflow-hidden rounded-[24px] border border-white/70 bg-white/55 p-5 shadow-[0_18px_45px_rgba(57,88,134,0.16)] backdrop-blur-xl"
                 >
-                  {/* FIX: Supabase full public URL kuduppadhala direct-ah c.logo potale podhum */}
                   {c.logo ? (
                     <img
                       src={c.logo}
@@ -86,7 +87,7 @@ export default function Companies() {
                   )}
 
                   <p className="text-sm font-black text-[#395886]">
-                    {c.name}
+                    {c.name || "Company"}
                   </p>
 
                   <div className="mt-3 flex justify-center">

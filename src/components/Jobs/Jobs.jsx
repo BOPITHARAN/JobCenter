@@ -71,11 +71,17 @@ export default function Jobs({ search }) {
     }
 
     try {
+      // ✅ Added headers to prevent CORS issues on POST request
       await axios.post(
         `${API_BASE_URL}/api/saved-jobs`,
         {
           user_id: user.id || user._id,
           job_id: jobId,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
         }
       );
 

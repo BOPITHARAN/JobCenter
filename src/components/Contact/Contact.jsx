@@ -15,8 +15,8 @@ import {
   X,
 } from "lucide-react";
 
-// டைனமிக் API URL (Production-ல் Railway URL-ஐயும், Localhost-ல் லோக்கல் URL-ஐயும் எடுக்கும்)
-const API_BASE_URL = process.env.NODE_ENV === "production"
+// ✅ Corrected Vite Env check for dynamic API URL
+const API_BASE_URL = import.meta.env.MODE === "production"
   ? "https://jpbcenterback-production.up.railway.app"
   : "http://localhost:5000";
 
@@ -59,11 +59,16 @@ export default function Contact() {
 
     try {
       setLoading(true);
-      // Backend-ஐ அழைத்தல்
+      // ✅ Added headers to prevent CORS issues
       const res = await axios.post(`${API_BASE_URL}/api/contact/send-email`, {
         ...form,
         email: cleanEmail,
-      }, { withCredentials: true });
+      }, { 
+        withCredentials: true,
+        headers: {
+          "Content-Type": "application/json"
+        }
+      });
 
       showPopup("success", res.data.message || t("messageSent", "Message sent"));
       setForm({ name: "", email: "", subject: "", message: "" });
@@ -121,7 +126,8 @@ export default function Contact() {
             <h3 className="mb-6 text-3xl font-black text-[#395886]">{t("sendMessage", "Send Message")}</h3>
             <div className="grid gap-4 md:grid-cols-2">
               <InputField name="name" value={form.name} onChange={handleChange} placeholder={t("yourName", "Your Name")} />
-              <InputField name="email" value={form.email} onChange={handleChange} placeholder={t("emailAddress", "Email Address")} />
+              {/* ✅ Added type="email" for proper mobile keyboard and validation */}
+              <InputField type="email" name="email" value={form.email} onChange={handleChange} placeholder={t("emailAddress", "Email Address")} />
               <InputField name="subject" value={form.subject} onChange={handleChange} placeholder={t("subject", "Subject")} span />
               <textarea rows="5" name="message" value={form.message} onChange={handleChange} placeholder={t("writeMessage", "Write Message")} className="md:col-span-2 resize-none rounded-2xl border border-[#B1C9EF] bg-[#F0F3FA] px-5 py-4 text-[#395886] outline-none focus:ring-4 focus:ring-[#638ECB]/25" />
               <button type="submit" disabled={loading} className="md:col-span-2 flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#395886] via-[#638ECB] to-[#8AAEE0] py-4 font-black text-white transition hover:scale-[1.02] disabled:opacity-60">
@@ -135,8 +141,9 @@ export default function Contact() {
   );
 }
 
-function InputField({ span, ...props }) {
-  return <input {...props} className={`${span ? "md:col-span-2" : ""} rounded-2xl border border-[#B1C9EF] bg-[#F0F3FA] px-5 py-4 text-[#395886] outline-none focus:ring-4 focus:ring-[#638ECB]/25`} />;
+// ✅ Updated to accept `type` prop (defaults to "text")
+function InputField({ span, type = "text", ...props }) {
+  return <input type={type} {...props} className={`${span ? "md:col-span-2" : ""} rounded-2xl border border-[#B1C9EF] bg-[#F0F3FA] px-5 py-4 text-[#395886] outline-none focus:ring-4 focus:ring-[#638ECB]/25`} />;
 }
 
 function InfoItem({ icon: Icon, title, text }) {

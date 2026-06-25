@@ -1,6 +1,5 @@
 import { useState } from "react";
-// 👇 Path is fixed here: added an extra '../' to reach the src folder
-import api from "../../api/axios"; 
+import api from "../../api/axios";
 import { useTranslation } from "react-i18next";
 import {
   Building2,
@@ -13,17 +12,12 @@ import {
   Send,
   Loader2,
   AlertCircle,
-  CheckCircle2
+  CheckCircle2,
 } from "lucide-react";
 
-/**
- * AddJob Component
- * Job vacancy-ஐச் சேர்க்கும் முழுமையான ஃபார்ம்
- */
 export default function AddJob() {
   const { t } = useTranslation();
 
-  // ஃபார்ம் டேட்டா ஸ்டேட்
   const [formData, setFormData] = useState({
     company: "",
     title: "",
@@ -38,55 +32,69 @@ export default function AddJob() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ text: "", type: "" });
 
-  // இன்புட் மாற்றங்களைக் கவனிக்கும் பங்க்ஷன்
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    setFormData((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
   };
 
-  // ஸ்டேட்டஸ் மெசேஜ்களைக் காட்டும் பங்க்ஷன்
   const showStatus = (text, type) => {
     setMessage({ text, type });
-    setTimeout(() => setMessage({ text: "", type: "" }), 5000);
+    setTimeout(() => setMessage({ text: "", type: "" }), 4000);
   };
 
-  // ஃபார்ம் சப்மிஷன்
+  /* ✅ SAFE NUMBER PARSER */
+  const parseDays = (value) => {
+    const num = Number(value);
+    return Number.isFinite(num) && num > 0 ? num : 30;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validation
-    if (
-      !formData.company.trim() ||
-      !formData.title.trim() ||
-      !formData.location.trim() ||
-      !formData.type.trim()
-    ) {
-      showStatus("Company name, job title, location, and type are mandatory fields!", "error");
-      return;
+    const company = formData.company.trim();
+    const title = formData.title.trim();
+    const location = formData.location.trim();
+    const type = formData.type.trim();
+    const description = formData.description.trim();
+
+    /* VALIDATION */
+    if (!company || !title || !location || !type) {
+      return showStatus(
+        "Company, title, location and type are required!",
+        "error"
+      );
+    }
+
+    if (!description) {
+      return showStatus("Job description cannot be empty!", "error");
     }
 
     try {
       setLoading(true);
 
-      // Integer conversion
-      const numericDays = parseInt(formData.days_left, 10);
-      
       const payload = {
-        ...formData,
-        company: formData.company.trim(),
-        title: formData.title.trim(),
-        location: formData.location.trim(),
-        type: formData.type.trim(),
+        company,
+        title,
+        location,
+        type,
         category: formData.category.trim() || "General",
         salary: formData.salary.trim() || "Negotiable",
-        days_left: isNaN(numericDays) ? 30 : numericDays,
+        days_left: parseDays(formData.days_left),
+        description,
       };
 
-      // API அழைப்பு (CORS பிழை வராது)
-      const res = await api.post('/api/jobs', payload);
+      /* ✅ IMPORTANT FIX: REMOVE /api IF AXIOS ALREADY HAS BASEURL */
+      const res = await api.post("/jobs", payload);
 
-      showStatus(res.data.message || "Job vacancy posted successfully! 🎉", "success");
+      const msg =
+        res.data?.message ||
+        res.data?.msg ||
+        "Job posted successfully!";
 
-      // ஃபார்மை ரீசெட் செய்தல்
+      showStatus(msg, "success");
+
       setFormData({
         company: "",
         title: "",
@@ -98,114 +106,83 @@ export default function AddJob() {
         description: "",
       });
     } catch (err) {
-      console.error(err);
-      showStatus(err?.response?.data?.message || "Failed to publish job opening onto database logs!", "error");
+      console.error("ADD JOB ERROR:", err);
+
+      const msg =
+        err?.response?.data?.message ||
+        err?.response?.data?.error ||
+        "Failed to post job";
+
+      showStatus(msg, "error");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="relative min-h-screen w-full overflow-hidden bg-[#F0F3FA] px-4 py-10 text-[#395886] font-sans">
-      {/* Background Decorators */}
-      <div className="absolute inset-0 bg-gradient-to-br from-[#F0F3FA] via-[#D5DEEF] to-[#B1C9EF]" />
-      <div className="absolute left-10 top-10 h-72 w-72 rounded-full bg-[#638ECB]/25 blur-[120px]" />
-      <div className="absolute bottom-10 right-10 h-72 w-72 rounded-full bg-[#395886]/20 blur-[120px]" />
+    <div className="min-h-screen bg-[#F0F3FA] p-6 text-[#395886]">
+      <div className="mx-auto max-w-5xl">
 
-      <div className="relative z-10 mx-auto max-w-5xl">
-        <div className="mb-8 text-center">
-          <p className="text-sm font-black uppercase tracking-[0.35em] text-[#638ECB]">
-            {t("careerManagement", "Career Management")}
-          </p>
-
-          <h1 className="mt-3 text-4xl font-black text-[#395886] md:text-5xl">
-            {t("addJobVacancy", "Add Job Vacancy")}
-          </h1>
-
-          <p className="mx-auto mt-3 max-w-xl text-[#395886]/70">
-            {t(
-              "addJobDescription",
-              "Create and publish a new job opportunity with a premium dashboard form."
-            )}
-          </p>
-        </div>
-
-        {/* Status Alerts */}
+        {/* STATUS */}
         {message.text && (
-          <div className={`mb-6 p-4 rounded-2xl flex items-center gap-3 border transition-all duration-300 ${
-            message.type === "success" 
-              ? "bg-emerald-50 border-emerald-200 text-emerald-800" 
-              : "bg-rose-50 border-rose-200 text-rose-800"
-          }`}>
-            {message.type === "success" ? <CheckCircle2 size={20} /> : <AlertCircle size={20} />}
-            <span className="text-sm font-bold">{message.text}</span>
+          <div
+            className={`mb-5 flex items-center gap-3 rounded-xl p-4 ${
+              message.type === "success"
+                ? "bg-green-50 text-green-700"
+                : "bg-red-50 text-red-700"
+            }`}
+          >
+            {message.type === "success" ? (
+              <CheckCircle2 />
+            ) : (
+              <AlertCircle />
+            )}
+            <b>{message.text}</b>
           </div>
         )}
 
-        <div className="rounded-[2rem] border border-white/70 bg-white/60 p-6 shadow-[0_25px_70px_rgba(57,88,134,0.18)] backdrop-blur-xl md:p-8">
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="grid gap-5 md:grid-cols-2">
-              <Input icon={<Building2 size={20} />} name="company" placeholder={t("companyName", "Company Name")} value={formData.company} onChange={handleChange} />
-              <Input icon={<Briefcase size={20} />} name="title" placeholder={t("jobTitle", "Job Title")} value={formData.title} onChange={handleChange} />
-              <Input icon={<MapPin size={20} />} name="location" placeholder={t("location", "Location")} value={formData.location} onChange={handleChange} />
-              <Input icon={<Clock size={20} />} name="type" placeholder={t("jobTypePlaceholder", "Full-time / Part-time / Hybrid")} value={formData.type} onChange={handleChange} />
-              <Input icon={<Tags size={20} />} name="category" placeholder={t("category", "Category")} value={formData.category} onChange={handleChange} />
-              <Input icon={<Clock size={20} />} name="days_left" type="number" placeholder={t("daysLeftPlaceholder", "Days Left (e.g. 15)")} value={formData.days_left} onChange={handleChange} />
-              <Input icon={<DollarSign size={20} />} name="salary" placeholder={t("salary", "Salary")} value={formData.salary} onChange={handleChange} />
-            </div>
+        {/* FORM */}
+        <form onSubmit={handleSubmit} className="space-y-5 bg-white p-6 rounded-2xl">
 
-            <div className="rounded-2xl border border-[#B1C9EF] bg-[#F0F3FA] p-4 transition focus-within:border-[#638ECB] focus-within:ring-4 focus-within:ring-[#638ECB]/20">
-              <div className="mb-2 flex items-center gap-3 text-[#638ECB]">
-                <FileText size={20} />
-                <span className="text-sm font-bold">
-                  {t("jobDescriptionLabel", "Job Description")}
-                </span>
-              </div>
-              <textarea
-                name="description"
-                rows="6"
-                placeholder={t("jobDescriptionPlaceholder", "Write job description, responsibilities, requirements...")}
-                value={formData.description}
-                onChange={handleChange}
-                className="w-full resize-none bg-transparent text-[#395886] outline-none placeholder:text-[#395886]/40"
-              />
-            </div>
+          <Input icon={<Building2 />} name="company" value={formData.company} onChange={handleChange} placeholder="Company" />
+          <Input icon={<Briefcase />} name="title" value={formData.title} onChange={handleChange} placeholder="Job Title" />
+          <Input icon={<MapPin />} name="location" value={formData.location} onChange={handleChange} placeholder="Location" />
+          <Input icon={<Clock />} name="type" value={formData.type} onChange={handleChange} placeholder="Job Type" />
+          <Input icon={<Tags />} name="category" value={formData.category} onChange={handleChange} placeholder="Category" />
+          <Input icon={<DollarSign />} name="salary" value={formData.salary} onChange={handleChange} placeholder="Salary" />
+          <Input icon={<Clock />} name="days_left" value={formData.days_left} onChange={handleChange} placeholder="Days Left" />
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="group flex w-full items-center justify-center gap-3 rounded-2xl bg-gradient-to-r from-[#395886] via-[#638ECB] to-[#8AAEE0] py-4 font-black text-white shadow-[0_0_30px_rgba(99,142,203,0.45)] transition hover:scale-[1.01] disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="animate-spin" size={20} />
-                  {t("publishing", "Publishing...")}
-                </>
-              ) : (
-                <>
-                  <Send size={20} className="transition group-hover:translate-x-1" />
-                  {t("publishJobVacancy", "Publish Job Vacancy")}
-                </>
-              )}
-            </button>
-          </form>
-        </div>
+          <div className="flex gap-3 items-start border p-3 rounded-xl">
+            <FileText />
+            <textarea
+              name="description"
+              value={formData.description}
+              onChange={handleChange}
+              placeholder="Job description..."
+              className="w-full outline-none"
+              rows="5"
+            />
+          </div>
+
+          <button
+            disabled={loading}
+            className="w-full bg-blue-600 text-white py-3 rounded-xl flex justify-center gap-2"
+          >
+            {loading ? <Loader2 className="animate-spin" /> : <Send />}
+            {loading ? "Posting..." : "Post Job"}
+          </button>
+        </form>
       </div>
     </div>
   );
 }
 
-/**
- * Custom Input Component
- */
+/* INPUT */
 function Input({ icon, ...props }) {
   return (
-    <div className="flex items-center gap-3 rounded-2xl border border-[#B1C9EF] bg-[#F0F3FA] px-4 py-3 transition focus-within:border-[#638ECB] focus-within:ring-4 focus-within:ring-[#638ECB]/20 hover:bg-white/70">
-      <div className="text-[#638ECB]">{icon}</div>
-      <input
-        {...props}
-        className="w-full bg-transparent text-[#395886] outline-none placeholder:text-[#395886]/40 font-medium"
-      />
+    <div className="flex items-center gap-3 border p-3 rounded-xl">
+      {icon}
+      <input {...props} className="w-full outline-none" />
     </div>
   );
 }
