@@ -24,9 +24,13 @@ export default function Hero({ onSearch = () => {}, jobs = [] }) {
 
   const dropdownRef = useRef(null);
 
+  // 🔥 FIXED: SAFE CATEGORY EXTRACTION
   const categories = useMemo(() => {
-    const uniqueCategories = jobs
-      .map((job) => job.category)
+    // API-ல் இருந்து வரும் டேட்டா Array தானா என்பதை செக் செய்கிறோம்
+    const safeJobs = Array.isArray(jobs) ? jobs : [];
+
+    const uniqueCategories = safeJobs
+      .map((job) => job?.category)
       .filter((cat) => cat && cat.trim() !== "");
 
     return ["All Categories", ...new Set(uniqueCategories)];
@@ -201,7 +205,7 @@ export default function Hero({ onSearch = () => {}, jobs = [] }) {
         <div className="mt-12 flex flex-wrap items-center justify-center gap-8 text-[#395886]/75">
           <InfoItem
             icon={<Building2 size={16} />}
-            text={`${jobs.length}+ Open Vacancies`}
+            text={`${Array.isArray(jobs) ? jobs.length : 0}+ Open Vacancies`}
           />
           <InfoItem icon={<Users size={16} />} text="45+ Top Companies" />
           <InfoItem
