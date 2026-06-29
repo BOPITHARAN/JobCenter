@@ -13,7 +13,9 @@ import {
   Loader2,
   AlertCircle,
   CheckCircle2,
-  PlusCircle
+  PlusCircle,
+  ImagePlus,
+  UploadCloud
 } from "lucide-react";
 
 export default function AddJob() {
@@ -30,6 +32,10 @@ export default function AddJob() {
     description: "",
   });
 
+  // ✅ State for Image Upload
+  const [logoFile, setLogoFile] = useState(null);
+  const [previewName, setPreviewName] = useState("");
+
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ text: "", type: "" });
 
@@ -38,6 +44,15 @@ export default function AddJob() {
       ...prev,
       [e.target.name]: e.target.value,
     }));
+  };
+
+  // ✅ Handle File Selection
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setLogoFile(file);
+      setPreviewName(file.name);
+    }
   };
 
   const showStatus = (text, type) => {
@@ -70,6 +85,31 @@ export default function AddJob() {
     try {
       setLoading(true);
 
+      let finalLogoUrl = null;
+
+      // ✅ 1. Upload Image to Supabase Storage if a file is selected
+      if (logoFile) {
+        const fileExt = logoFile.name.split('.').pop();
+        const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
+        
+        // Note: Ensure you have a public storage bucket named 'logos' in your Supabase project
+        const { error: uploadError } = await supabase.storage
+          .from("logos") 
+          .upload(fileName, logoFile);
+
+        if (uploadError) {
+          throw new Error("Logo upload failed: " + uploadError.message);
+        }
+
+        // Get Public URL of the uploaded image
+        const { data: urlData } = supabase.storage
+          .from("logos")
+          .getPublicUrl(fileName);
+
+        finalLogoUrl = urlData.publicUrl;
+      }
+
+      // ✅ 2. Insert Job Details to Database (Fixed column name to 'logo')
       const payload = {
         company,
         title,
@@ -79,10 +119,10 @@ export default function AddJob() {
         salary: formData.salary.trim() || "Negotiable",
         days_left: parseDays(formData.days_left),
         description,
+        logo: finalLogoUrl, // ✅ Matches your DB column 'logo'
         created_at: new Date().toISOString()
       };
 
-      // ✅ SUPABASE INSERT (Directly to 'jobs' table)
       const { error } = await supabase
         .from("jobs")
         .insert([payload]);
@@ -91,6 +131,7 @@ export default function AddJob() {
 
       showStatus("Job posted successfully!", "success");
 
+      // Reset form
       setFormData({
         company: "",
         title: "",
@@ -101,6 +142,8 @@ export default function AddJob() {
         salary: "",
         description: "",
       });
+      setLogoFile(null);
+      setPreviewName("");
 
     } catch (err) {
       console.error("ADD JOB ERROR:", err);
@@ -145,8 +188,27 @@ export default function AddJob() {
           <Input icon={<Tags size={20} />} name="category" value={formData.category} onChange={handleChange} placeholder="Category (e.g., IT, Finance)" />
           <Input icon={<DollarSign size={20} />} name="salary" value={formData.salary} onChange={handleChange} placeholder="Salary (e.g., 150K LKR)" />
           
-          <div className="md:col-span-2 lg:col-span-1">
+          <div className="col-span-1">
              <Input icon={<Clock size={20} />} name="days_left" value={formData.days_left} onChange={handleChange} placeholder="Days Left (e.g., 30)" type="number" min="1" />
+          </div>
+
+          {/* ✅ Logo File Upload Input */}
+          <div className="col-span-1 group relative">
+            <div className="flex items-center gap-3 bg-[#F8FAFC] border border-[#E2E8F0] px-4 py-3.5 md:py-4 rounded-2xl transition-all duration-300 focus-within:border-[#638ECB] focus-within:ring-4 focus-within:ring-[#638ECB]/10 hover:border-[#B1C9EF] cursor-pointer relative overflow-hidden">
+              <div className="text-[#638ECB] shrink-0">
+                <ImagePlus size={20} />
+              </div>
+              <span className={`w-full truncate text-sm md:text-base font-medium ${previewName ? "text-[#395886]" : "text-[#395886]/50"}`}>
+                {previewName || "Upload Company Logo"}
+              </span>
+              <UploadCloud size={18} className="text-[#638ECB]/60 absolute right-4" />
+              <input 
+                type="file" 
+                accept="image/*"
+                onChange={handleFileChange} 
+                className="absolute inset-0 opacity-0 cursor-pointer w-full h-full" 
+              />
+            </div>
           </div>
 
           <div className="col-span-1 md:col-span-2 group">

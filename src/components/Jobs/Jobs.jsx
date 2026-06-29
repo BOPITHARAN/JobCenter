@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { supabase } from "../../api/supabaseClient"; // ✅ Supabase Imported (Axios Removed)
+import { supabase } from "../../api/supabaseClient";
 
 import {
   Clock,
@@ -15,6 +15,123 @@ import {
 
 import ApplyModal from "../ApplyModal/ApplyModal";
 
+// 📝 Sub-component for individual job cards to manage "Read More" state
+const JobCard = ({ job, isSaved, onSave, onApply, t }) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  return (
+    <article className="group relative flex min-h-[370px] flex-col overflow-hidden rounded-[28px] border border-[#D5DEEF] bg-white/80 p-5 shadow-[0_15px_40px_rgba(57,88,134,.12)] backdrop-blur-xl transition duration-500 hover:-translate-y-2 hover:border-[#638ECB] hover:bg-white">
+      {/* Background Gradients */}
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-[#F0F3FA] via-[#B1C9EF] to-[#638ECB] opacity-0 transition duration-700 group-hover:opacity-25" />
+      <div className="pointer-events-none absolute -right-16 -top-16 h-36 w-36 rounded-full bg-[#8AAEE0]/35 blur-3xl" />
+
+      {/* Badges (Fixed truncation issue) */}
+      <div className="relative z-10 flex flex-wrap items-start justify-between gap-2">
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-[#F0F3FA] px-3 py-1.5 text-[11px] font-bold text-[#395886]/75">
+          <Clock size={12} className="shrink-0" />
+          <span>{job.days_left || t("new", "New")}</span>
+        </span>
+
+        <span className="rounded-full bg-[#D5DEEF] px-3 py-1.5 text-[11px] font-black text-[#395886] whitespace-nowrap">
+          {job.type || t("fullTime", "Full Time")}
+        </span>
+      </div>
+
+      {/* Logo (Added Image Support) */}
+      <div className="relative z-10 mt-5 flex h-14 w-14 shrink-0 overflow-hidden items-center justify-center rounded-2xl bg-gradient-to-r from-[#8AAEE0] via-[#638ECB] to-[#395886] text-white shadow-[0_14px_30px_rgba(57,88,134,.25)]">
+        {job.logo || job.logo_url ? (
+          <img
+            src={job.logo || job.logo_url}
+            alt={job.company}
+            className="h-full w-full object-cover"
+          />
+        ) : (
+          <Building2 size={22} />
+        )}
+      </div>
+
+      {/* Company Name */}
+      <p className="relative z-10 mt-4 text-xs font-bold uppercase tracking-[0.16em] text-[#638ECB] break-words">
+        {job.company || t("company", "Company")}
+      </p>
+
+      {/* Job Title (Read More logic applied) */}
+      <h3
+        className={`relative z-10 mt-2 text-lg font-black leading-7 text-[#395886] break-words ${
+          isExpanded ? "" : "line-clamp-2 min-h-[56px]"
+        }`}
+      >
+        {job.title || t("jobTitle", "Job Title")}
+      </h3>
+
+      {/* Job Description (If you have this field in Supabase) */}
+      {job.description && (
+        <p
+          className={`relative z-10 mt-2 text-sm font-medium text-[#395886]/80 break-words ${
+            isExpanded ? "" : "line-clamp-2"
+          }`}
+        >
+          {job.description}
+        </p>
+      )}
+
+      {/* Location */}
+      <p
+        className={`relative z-10 mt-2 flex items-start gap-2 text-sm font-semibold text-[#395886]/70 ${
+          isExpanded ? "" : "line-clamp-2 min-h-[24px]"
+        }`}
+      >
+        <MapPin size={16} className="mt-0.5 shrink-0 text-[#638ECB]" />
+        <span className="break-words">{job.location || "Sri Lanka"}</span>
+      </p>
+
+      {/* Salary */}
+      <p className="relative z-10 mt-3 text-sm font-black text-[#638ECB] break-words">
+        {job.salary || t("negotiable", "Negotiable")}
+      </p>
+
+      {/* Read More / Show Less Button */}
+      <button
+        onClick={() => setIsExpanded(!isExpanded)}
+        className="relative z-10 mt-3 self-start text-xs font-black uppercase tracking-wider text-[#395886] hover:text-[#638ECB] transition-colors"
+      >
+        {isExpanded ? t("showLess", "Show Less ▲") : t("readMore", "Read More ▼")}
+      </button>
+
+      {/* Action Buttons */}
+      <div className="relative z-10 mt-auto pt-5">
+        <button
+          type="button"
+          disabled={isSaved}
+          onClick={() => onSave(job.id)}
+          className={`flex w-full items-center justify-center gap-2 rounded-2xl border px-4 py-3 text-sm font-black transition ${
+            isSaved
+              ? "border-[#638ECB] bg-[#D5DEEF] text-[#395886]"
+              : "border-[#B1C9EF] bg-white/70 text-[#395886] hover:bg-[#F0F3FA]"
+          }`}
+        >
+          <Heart size={15} fill={isSaved ? "#395886" : "none"} />
+          <span className="truncate">
+            {isSaved ? t("saved", "Saved") : t("saveJob", "Save Job")}
+          </span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => onApply(job)}
+          className="mt-3 flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#638ECB] to-[#395886] px-4 py-3 text-sm font-black text-white shadow-[0_14px_30px_rgba(57,88,134,.25)] transition hover:scale-[1.02]"
+        >
+          <span className="truncate">{t("applyNow", "Apply Now")}</span>
+          <ArrowRight size={15} />
+        </button>
+      </div>
+    </article>
+  );
+};
+
+// ---------------------------------------------
+// MAIN JOBS COMPONENT
+// ---------------------------------------------
 export default function Jobs({ search }) {
   const { t } = useTranslation();
 
@@ -62,7 +179,6 @@ export default function Jobs({ search }) {
     }
 
     try {
-      // 'saved_jobs' என்ற டேபிளில் டேட்டாவை சேமிக்கிறோம்
       const { error } = await supabase
         .from("saved_jobs")
         .insert([{ user_id: user.id, job_id: jobId }]);
@@ -73,7 +189,9 @@ export default function Jobs({ search }) {
       alert(t("jobSaved", "Job saved successfully"));
     } catch (error) {
       console.error("SAVE JOB ERROR:", error);
-      alert(t("saveFailed", "Save failed. Ensure 'saved_jobs' table exists in Supabase."));
+      alert(
+        t("saveFailed", "Save failed. Ensure 'saved_jobs' table exists in Supabase.")
+      );
     }
   };
 
@@ -104,10 +222,7 @@ export default function Jobs({ search }) {
   });
 
   return (
-    <section
-      id="jobs"
-      className="relative overflow-hidden bg-[#F0F3FA] px-4 py-20"
-    >
+    <section id="jobs" className="relative overflow-hidden bg-[#F0F3FA] px-4 py-20">
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-[#F0F3FA] via-[#D5DEEF] to-[#B1C9EF]" />
       <div className="pointer-events-none absolute -left-32 top-10 h-[340px] w-[340px] rounded-full bg-[#8AAEE0]/35 blur-[120px]" />
       <div className="pointer-events-none absolute bottom-10 right-0 h-[340px] w-[340px] rounded-full bg-[#638ECB]/25 blur-[120px]" />
@@ -134,7 +249,6 @@ export default function Jobs({ search }) {
         {loading ? (
           <div className="mx-auto mt-12 flex max-w-xl flex-col items-center justify-center rounded-[28px] border border-[#D5DEEF] bg-white/75 p-10 text-center shadow-[0_20px_50px_rgba(57,88,134,.12)] backdrop-blur-xl">
             <RefreshCw className="animate-spin text-[#395886]" size={42} />
-
             <h2 className="mt-5 text-2xl font-black text-[#395886]">
               {t("loading", "Loading...")}
             </h2>
@@ -162,100 +276,23 @@ export default function Jobs({ search }) {
             </button>
           </div>
         ) : (
-          <div className="mt-12 grid items-stretch gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {filteredJobs.map((job) => {
-              const isSaved = savedJobs.includes(job.id);
-
-              return (
-                <article
-                  key={job.id}
-                  className="group relative flex min-h-[370px] flex-col overflow-hidden rounded-[28px] border border-[#D5DEEF] bg-white/80 p-5 shadow-[0_15px_40px_rgba(57,88,134,.12)] backdrop-blur-xl transition duration-500 hover:-translate-y-2 hover:border-[#638ECB] hover:bg-white"
-                >
-                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-[#F0F3FA] via-[#B1C9EF] to-[#638ECB] opacity-0 transition duration-700 group-hover:opacity-25" />
-                  <div className="pointer-events-none absolute -right-16 -top-16 h-36 w-36 rounded-full bg-[#8AAEE0]/35 blur-3xl" />
-
-                  <div className="relative z-10 flex items-start justify-between gap-3">
-                    <span className="inline-flex max-w-[52%] items-center gap-1.5 truncate rounded-full bg-[#F0F3FA] px-3 py-1.5 text-[11px] font-bold text-[#395886]/75">
-                      <Clock size={12} className="shrink-0" />
-                      <span className="truncate">
-                        {job.days_left || t("new", "New")}
-                      </span>
-                    </span>
-
-                    <span className="max-w-[45%] truncate rounded-full bg-[#D5DEEF] px-3 py-1.5 text-[11px] font-black text-[#395886]">
-                      {job.type || t("fullTime", "Full Time")}
-                    </span>
-                  </div>
-
-                  <div className="relative z-10 mt-5 flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-r from-[#8AAEE0] via-[#638ECB] to-[#395886] text-white shadow-[0_14px_30px_rgba(57,88,134,.25)]">
-                    <Building2 size={22} />
-                  </div>
-
-                  <p className="relative z-10 mt-4 line-clamp-1 text-xs font-bold uppercase tracking-[0.16em] text-[#638ECB]">
-                    {job.company || t("company", "Company")}
-                  </p>
-
-                  <h3 className="relative z-10 mt-2 line-clamp-2 min-h-[56px] text-lg font-black leading-7 text-[#395886]">
-                    {job.title || t("jobTitle", "Job Title")}
-                  </h3>
-
-                  <p className="relative z-10 mt-2 flex min-h-[24px] items-center gap-2 text-sm font-semibold text-[#395886]/70">
-                    <MapPin size={14} className="shrink-0 text-[#638ECB]" />
-                    <span className="line-clamp-1">
-                      {job.location || "Sri Lanka"}
-                    </span>
-                  </p>
-
-                  <p className="relative z-10 mt-3 line-clamp-1 text-sm font-black text-[#638ECB]">
-                    {job.salary || t("negotiable", "Negotiable")}
-                  </p>
-
-                  <div className="relative z-10 mt-auto pt-5">
-                    <button
-                      type="button"
-                      disabled={isSaved}
-                      onClick={() => saveJob(job.id)}
-                      className={`flex w-full items-center justify-center gap-2 rounded-2xl border px-4 py-3 text-sm font-black transition ${
-                        isSaved
-                          ? "border-[#638ECB] bg-[#D5DEEF] text-[#395886]"
-                          : "border-[#B1C9EF] bg-white/70 text-[#395886] hover:bg-[#F0F3FA]"
-                      }`}
-                    >
-                      <Heart
-                        size={15}
-                        fill={isSaved ? "#395886" : "none"}
-                      />
-
-                      <span className="truncate">
-                        {isSaved
-                          ? t("saved", "Saved")
-                          : t("saveJob", "Save Job")}
-                      </span>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => setSelectedJob(job)}
-                      className="mt-3 flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#638ECB] to-[#395886] px-4 py-3 text-sm font-black text-white shadow-[0_14px_30px_rgba(57,88,134,.25)] transition hover:scale-[1.02]"
-                    >
-                      <span className="truncate">
-                        {t("applyNow", "Apply Now")}
-                      </span>
-                      <ArrowRight size={15} />
-                    </button>
-                  </div>
-                </article>
-              );
-            })}
+          <div className="mt-12 grid items-start gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {filteredJobs.map((job) => (
+              <JobCard
+                key={job.id}
+                job={job}
+                isSaved={savedJobs.includes(job.id)}
+                onSave={saveJob}
+                onApply={setSelectedJob}
+                t={t}
+              />
+            ))}
           </div>
         )}
       </div>
 
       {selectedJob && (
-        <ApplyModal
-          job={selectedJob}
-          onClose={() => setSelectedJob(null)}
-        />
+        <ApplyModal job={selectedJob} onClose={() => setSelectedJob(null)} />
       )}
     </section>
   );
