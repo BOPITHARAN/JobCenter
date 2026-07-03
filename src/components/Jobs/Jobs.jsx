@@ -20,12 +20,12 @@ const JobCard = ({ job, isSaved, onSave, onApply, t }) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
   return (
-    <article className="group relative flex min-h-[370px] flex-col overflow-hidden rounded-[28px] border border-[#D5DEEF] bg-white/80 p-5 shadow-[0_15px_40px_rgba(57,88,134,.12)] backdrop-blur-xl transition duration-500 hover:-translate-y-2 hover:border-[#638ECB] hover:bg-white">
+    <article className="group relative flex h-full w-full min-h-[370px] flex-col overflow-hidden rounded-[28px] border border-[#D5DEEF] bg-white/80 p-5 shadow-[0_15px_40px_rgba(57,88,134,.12)] backdrop-blur-xl transition duration-500 hover:-translate-y-2 hover:border-[#638ECB] hover:bg-white">
       {/* Background Gradients */}
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-[#F0F3FA] via-[#B1C9EF] to-[#638ECB] opacity-0 transition duration-700 group-hover:opacity-25" />
       <div className="pointer-events-none absolute -right-16 -top-16 h-36 w-36 rounded-full bg-[#8AAEE0]/35 blur-3xl" />
 
-      {/* Badges (Fixed truncation issue) */}
+      {/* Badges */}
       <div className="relative z-10 flex flex-wrap items-start justify-between gap-2">
         <span className="inline-flex items-center gap-1.5 rounded-full bg-[#F0F3FA] px-3 py-1.5 text-[11px] font-bold text-[#395886]/75">
           <Clock size={12} className="shrink-0" />
@@ -37,8 +37,8 @@ const JobCard = ({ job, isSaved, onSave, onApply, t }) => {
         </span>
       </div>
 
-      {/* Logo (Added Image Support) */}
-      <div className="relative z-10 mt-5 flex h-14 w-14 shrink-0 overflow-hidden items-center justify-center rounded-2xl bg-gradient-to-r from-[#8AAEE0] via-[#638ECB] to-[#395886] text-white shadow-[0_14px_30px_rgba(57,88,134,.25)]">
+      {/* Logo */}
+      <div className="relative z-10 mt-5 flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-r from-[#8AAEE0] via-[#638ECB] to-[#395886] text-white shadow-[0_14px_30px_rgba(57,88,134,.25)]">
         {job.logo || job.logo_url ? (
           <img
             src={job.logo || job.logo_url}
@@ -51,23 +51,23 @@ const JobCard = ({ job, isSaved, onSave, onApply, t }) => {
       </div>
 
       {/* Company Name */}
-      <p className="relative z-10 mt-4 text-xs font-bold uppercase tracking-[0.16em] text-[#638ECB] break-words">
+      <p className="relative z-10 mt-4 break-words text-xs font-bold uppercase tracking-[0.16em] text-[#638ECB]">
         {job.company || t("company", "Company")}
       </p>
 
-      {/* Job Title (Read More logic applied) */}
+      {/* Job Title */}
       <h3
-        className={`relative z-10 mt-2 text-lg font-black leading-7 text-[#395886] break-words ${
-          isExpanded ? "" : "line-clamp-2 min-h-[56px]"
+        className={`relative z-10 mt-2 break-words text-lg font-black leading-7 text-[#395886] ${
+          isExpanded ? "" : "min-h-[56px] line-clamp-2"
         }`}
       >
         {job.title || t("jobTitle", "Job Title")}
       </h3>
 
-      {/* Job Description (If you have this field in Supabase) */}
+      {/* Job Description */}
       {job.description && (
         <p
-          className={`relative z-10 mt-2 text-sm font-medium text-[#395886]/80 break-words ${
+          className={`relative z-10 mt-2 break-words text-sm font-medium text-[#395886]/80 ${
             isExpanded ? "" : "line-clamp-2"
           }`}
         >
@@ -78,7 +78,7 @@ const JobCard = ({ job, isSaved, onSave, onApply, t }) => {
       {/* Location */}
       <p
         className={`relative z-10 mt-2 flex items-start gap-2 text-sm font-semibold text-[#395886]/70 ${
-          isExpanded ? "" : "line-clamp-2 min-h-[24px]"
+          isExpanded ? "" : "min-h-[24px] line-clamp-2"
         }`}
       >
         <MapPin size={16} className="mt-0.5 shrink-0 text-[#638ECB]" />
@@ -86,19 +86,19 @@ const JobCard = ({ job, isSaved, onSave, onApply, t }) => {
       </p>
 
       {/* Salary */}
-      <p className="relative z-10 mt-3 text-sm font-black text-[#638ECB] break-words">
+      <p className="relative z-10 mt-3 break-words text-sm font-black text-[#638ECB]">
         {job.salary || t("negotiable", "Negotiable")}
       </p>
 
       {/* Read More / Show Less Button */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="relative z-10 mt-3 self-start text-xs font-black uppercase tracking-wider text-[#395886] hover:text-[#638ECB] transition-colors"
+        className="relative z-10 mt-3 self-start text-xs font-black uppercase tracking-wider text-[#395886] transition-colors hover:text-[#638ECB]"
       >
         {isExpanded ? t("showLess", "Show Less ▲") : t("readMore", "Read More ▼")}
       </button>
 
-      {/* Action Buttons */}
+      {/* Action Buttons - 'mt-auto' forces this to the very bottom */}
       <div className="relative z-10 mt-auto pt-5">
         <button
           type="button"
@@ -234,12 +234,7 @@ export default function Jobs({ search }) {
             {t("jobs", "Jobs")}
           </div>
 
-          <h2 className="text-3xl font-black leading-tight text-[#395886] md:text-5xl">
-            {t("recent", "Recent")}{" "}
-            <span className="bg-gradient-to-r from-[#395886] via-[#638ECB] to-[#8AAEE0] bg-clip-text text-transparent">
-              {t("jobs", "Jobs")}
-            </span>
-          </h2>
+          
 
           <p className="mx-auto mt-4 max-w-xl text-sm font-semibold leading-6 text-[#395886]/70">
             {t("findApply", "Find and apply for the best jobs easily.")}
@@ -276,7 +271,7 @@ export default function Jobs({ search }) {
             </button>
           </div>
         ) : (
-          <div className="mt-12 grid items-start gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="mt-12 grid items-stretch gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {filteredJobs.map((job) => (
               <JobCard
                 key={job.id}

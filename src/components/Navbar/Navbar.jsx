@@ -115,7 +115,7 @@ export default function Navbar({
               <img
                 src={logo}
                 alt="JobCenter+ Logo"
-                className="h-18 w-18 rounded-full object-cover bg-transparent shadow-[0_10px_25px_rgba(57,88,134,0.18)]"
+                className="h-18 w-18 rounded-full bg-transparent object-cover shadow-[0_10px_25px_rgba(57,88,134,0.18)]"
               />
 
               <div className="min-w-0 text-left">

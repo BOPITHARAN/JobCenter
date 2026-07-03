@@ -1,98 +1,84 @@
-import { Mail, Code2, Heart } from "lucide-react";
+import { Mail, Heart, MessageCircle } from "lucide-react";
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
-import whatsappQR from "../../assets/whatsappQR.png";
 
 export default function Footer() {
   return (
-    <footer className="relative overflow-hidden bg-[#F0F3FA]">
-      <div className="absolute inset-0 bg-gradient-to-br from-[#F0F3FA] via-[#D5DEEF] to-[#B1C9EF]" />
+    <footer 
+      className="relative overflow-hidden border-t border-[#D5DEEF] bg-gradient-to-b from-white to-[#F0F3FA] py-12 sm:py-16"
+      style={{ fontFamily: "'Outfit', sans-serif" }}
+    >
+      {/* Premium Font Import (Outfit) */}
+      <style>
+        {`@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;900&display=swap');`}
+      </style>
 
-      <motion.div
-        animate={{ x: [0, 30, 0], y: [0, -30, 0] }}
-        transition={{ duration: 8, repeat: Infinity }}
-        className="absolute -left-24 top-0 h-[220px] w-[220px] rounded-full bg-[#638ECB]/20 blur-[100px]"
-      />
+      {/* Subtle Background Glow for Premium Feel */}
+      <div className="pointer-events-none absolute -left-20 bottom-0 h-40 w-40 rounded-full bg-[#8AAEE0]/20 blur-3xl" />
+      <div className="pointer-events-none absolute -right-20 top-0 h-40 w-40 rounded-full bg-[#638ECB]/15 blur-3xl" />
 
-      <motion.div
-        animate={{ x: [0, -30, 0], y: [0, 30, 0] }}
-        transition={{ duration: 10, repeat: Infinity }}
-        className="absolute bottom-0 right-0 h-[220px] w-[220px] rounded-full bg-[#395886]/20 blur-[100px]"
-      />
-
-      <div className="relative mx-auto max-w-6xl px-4 py-10">
-        <div className="flex flex-col items-center justify-center text-center">
-          <h2 className="text-3xl font-black text-[#395886]">
-            Job Center
-            <span className="bg-gradient-to-r from-[#395886] via-[#638ECB] to-[#8AAEE0] bg-clip-text text-transparent">
-              {" "}Plus
-            </span>
-          </h2>
-
-          <p className="mt-3 max-w-md text-sm leading-6 text-[#395886]/70">
-            Smart career platform connecting talented people with trusted
-            employers.
-          </p>
-
-          <Link
-            to="/privacy"
-            className="mt-4 inline-flex items-center rounded-full border border-[#638ECB]/30 bg-white/60 px-5 py-2 text-xs font-bold text-[#395886] shadow-sm backdrop-blur-md transition-all duration-300 hover:-translate-y-1 hover:border-[#638ECB]/60 hover:bg-white hover:shadow-[0_10px_25px_rgba(57,88,134,0.15)]"
-          >
-            Privacy Policy
-          </Link>
-        </div>
-
-        <motion.div
-          whileHover={{ y: -4 }}
-          className="mx-auto mt-8 max-w-md rounded-[28px] border border-white/60 bg-white/60 p-5 shadow-[0_20px_50px_rgba(57,88,134,0.15)] backdrop-blur-xl"
+      <div className="relative z-10 mx-auto flex max-w-3xl flex-col items-center justify-center gap-8 px-5 text-center sm:gap-10">
+        
+        {/* Buttons Section with Entrance Animation */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+          className="flex w-full flex-col items-center gap-4 sm:w-auto sm:flex-row sm:gap-6"
         >
-          <div className="flex items-center justify-center gap-3">
-            <div className="rounded-2xl bg-gradient-to-br from-[#395886] to-[#638ECB] p-3 text-white">
-              <Code2 size={18} />
-            </div>
+          {/* Direct Web Gmail Button */}
+          <motion.a 
+            whileHover={{ scale: 1.03, y: -2 }}
+            whileTap={{ scale: 0.97 }}
+            href="https://mail.google.com/mail/?view=cm&fs=1&to=omsdevelopers05@gmail.com" 
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group flex w-full max-w-[300px] items-center justify-center gap-3 rounded-2xl border border-[#B1C9EF] bg-white/70 px-6 py-3.5 text-sm font-bold tracking-wide text-[#395886] shadow-[0_10px_25px_rgba(57,88,134,0.10)] backdrop-blur-xl transition-all duration-300 hover:border-[#638ECB] hover:bg-white sm:w-auto sm:px-8 sm:text-[15px]"
+          >
+            <Mail size={18} className="shrink-0 text-[#638ECB] transition-colors duration-300 group-hover:text-[#395886]" />
+            <span className="truncate">omsdevelopers05@gmail.com</span>
+          </motion.a>
 
-            <div>
-              <h3 className="font-black text-[#395886]">
-                OMS {"<Developers/>"}
-              </h3>
-
-              <p className="text-[11px] text-[#395886]/70">
-                Designed & Developed By OMS
-              </p>
-            </div>
-          </div>
-
-          <div className="mt-5 flex flex-col items-center">
-            <div className="rounded-2xl bg-white p-2 shadow-md">
-              <img
-                src={whatsappQR}
-                alt="WhatsApp QR"
-                className="h-24 w-24 rounded-xl object-cover"
-              />
-            </div>
-
-            <div className="mt-4 flex items-center gap-2 text-xs text-[#395886]/80">
-              <Mail size={14} />
-              <span>omsdevelopers@gmail.com</span>
-            </div>
-          </div>
+          {/* WhatsApp Button */}
+          <motion.a 
+            whileHover={{ scale: 1.03, y: -2 }}
+            whileTap={{ scale: 0.97 }}
+            href="https://wa.me/94755345154" 
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group flex w-full max-w-[300px] items-center justify-center gap-3 rounded-2xl border border-[#B1C9EF] bg-white/70 px-6 py-3.5 text-sm font-bold tracking-wide text-[#395886] shadow-[0_10px_25px_rgba(57,88,134,0.10)] backdrop-blur-xl transition-all duration-300 hover:border-[#638ECB] hover:bg-white sm:w-auto sm:px-8 sm:text-[15px]"
+          >
+            <MessageCircle size={18} className="shrink-0 text-[#638ECB] transition-colors duration-300 group-hover:text-[#395886]" />
+            WhatsApp
+          </motion.a>
         </motion.div>
 
-        <div className="mt-8 border-t border-[#638ECB]/20 pt-5">
-          <div className="flex flex-col items-center gap-2 text-center">
-            <p className="text-[11px] text-[#395886]/60">
-              © 2026 Job Center Plus. All Rights Reserved.
-            </p>
-
-            <div className="flex flex-wrap items-center justify-center gap-2 text-[11px] text-[#395886]/70">
-              <span>Designed & Developed with</span>
-
-              <Heart size={12} className="fill-red-500 text-red-500" />
-
-              <span>by OMS {"<Developers/>"}</span>
-            </div>
+        {/* Copyright & Credit Section */}
+        <motion.div 
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8, delay: 0.2 }}
+          className="flex w-full flex-col items-center gap-3"
+        >
+          <p className="text-xs font-semibold tracking-wide text-[#395886]/70 sm:text-sm">
+            © 2026 Job Center Plus.
+          </p>
+          
+          <div className="flex flex-wrap items-center justify-center gap-1.5 text-xs tracking-wide text-[#395886]/80 sm:gap-2 sm:text-sm">
+            <span className="font-semibold">Designed & Developed with</span>
+            <motion.div
+              animate={{ scale: [1, 1.2, 1] }}
+              transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
+              className="flex items-center"
+            >
+              <Heart size={14} className="mx-0.5 shrink-0 fill-red-500 text-red-500 drop-shadow-sm" />
+            </motion.div>
+            <span className="font-semibold">by</span>
+            <span className="font-black text-[#395886]">OMS {"<Developers/>"}</span>
           </div>
-        </div>
+        </motion.div>
+        
       </div>
     </footer>
   );

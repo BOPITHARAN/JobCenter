@@ -56,7 +56,8 @@ export default function Companies() {
           </span>
         </motion.h2>
 
-        <div className="mt-10 grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
+        {/* Added items-stretch to ensure equal height in the grid */}
+        <div className="mt-10 grid items-stretch gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
           {companies.length === 0 ? (
             <p className="col-span-full text-gray-500">
               No companies yet
@@ -70,28 +71,32 @@ export default function Companies() {
                   initial={{ opacity: 0, y: 25 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
-                  className="group relative overflow-hidden rounded-[24px] border border-white/70 bg-white/55 p-5 shadow-[0_18px_45px_rgba(57,88,134,0.16)] backdrop-blur-xl"
+                  /* Added flex flex-col h-full w-full for perfect alignment */
+                  className="group relative flex h-full w-full flex-col overflow-hidden rounded-[24px] border border-white/70 bg-white/55 p-5 shadow-[0_18px_45px_rgba(57,88,134,0.16)] backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:bg-white/80"
                 >
-                  {c.logo ? (
-                    <img
-                      src={c.logo}
-                      alt={c.name}
-                      className="mx-auto mb-4 h-16 w-16 rounded-2xl object-cover border"
-                      onError={(e) => {
-                        e.target.src = "https://via.placeholder.com/80?text=Logo";
-                      }}
-                    />
-                  ) : (
-                    <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-[#395886] via-[#638ECB] to-[#8AAEE0] text-white">
-                      <Building2 size={24} />
-                    </div>
-                  )}
+                  <div className="mb-4 flex shrink-0 justify-center">
+                    {c.logo ? (
+                      <img
+                        src={c.logo}
+                        alt={c.name}
+                        className="h-16 w-16 rounded-2xl border object-cover"
+                        onError={(e) => {
+                          e.target.src = "https://via.placeholder.com/80?text=Logo";
+                        }}
+                      />
+                    ) : (
+                      <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-[#395886] via-[#638ECB] to-[#8AAEE0] text-white">
+                        <Building2 size={24} />
+                      </div>
+                    )}
+                  </div>
 
-                  <p className="text-sm font-black text-[#395886]">
+                  <p className="mb-2 break-words text-sm font-black text-[#395886]">
                     {c.name || "Company"}
                   </p>
 
-                  <div className="mt-3 flex justify-center">
+                  {/* mt-auto pushes the badge to the absolute bottom perfectly */}
+                  <div className="mt-auto flex justify-center pt-2">
                     <BadgeCheck
                       size={15}
                       className="text-[#638ECB]"

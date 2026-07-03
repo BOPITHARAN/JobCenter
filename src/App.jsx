@@ -7,13 +7,13 @@ import { supabase } from "./api/supabaseClient";
 import Navbar from "./components/Navbar/Navbar";
 import Hero from "./components/Hero/Hero";
 import About from "./components/About/About";
-import Stats from "./components/Stats/Stats";
+// import Stats from "./components/Stats/Stats";
 import Jobs from "./components/Jobs/Jobs";
-import AIJobs from "./components/AIJobs/AIJobs";
-import Features from "./components/Features/Features";
-import TrendingSkills from "./components/TrendingSkills/TrendingSkills";
+// import AIJobs from "./components/AIJobs/AIJobs";
+// import Features from "./components/Features/Features";
+// import TrendingSkills from "./components/TrendingSkills/TrendingSkills";
 import Companies from "./components/Companies/Companies";
-import DashboardPreview from "./components/DashboardPreview/DashboardPreview";
+// import DashboardPreview from "./components/DashboardPreview/DashboardPreview";
 import Categories from "./components/Categories/Categories";
 import FAQ from "./components/FAQ/FAQ";
 import Newsletter from "./components/Newsletter/Newsletter";
@@ -50,19 +50,18 @@ function HomePage({
         <Hero onSearch={handleHeroSearch} jobs={allJobs} />
       </section>
 
-      {/* 🌟 2. JOBS GRID LAYER */}
-      <section id="jobs" className="relative z-20 -mt-8 md:-mt-12">
-        <Jobs search={searchParams} />
-        <AIJobs isAdmin={user?.role === "admin"} />
-      </section>
+    {/* 🌟 2. JOBS GRID LAYER */}
+<section id="jobs" className="relative z-20 -mt-8 md:-mt-12">
+  <Jobs search={searchParams} />
+</section>
 
       <section id="about">
         <About />
       </section>
 
-      <section id="stats">
+      {/* <section id="stats">
         <Stats />
-      </section>
+      </section> */}
 
       <section id="categories">
         <Categories />
@@ -72,17 +71,17 @@ function HomePage({
         <Companies />
       </section>
 
-      <section id="features">
+      {/* <section id="features">
         <Features />
-      </section>
+      </section> */}
 
-      <section id="skills">
+      {/* <section id="skills">
         <TrendingSkills />
-      </section>
+      </section> */}
 
-      <section id="dashboard">
+      {/* <section id="dashboard">
         <DashboardPreview />
-      </section>
+      </section> */}
 
       <section id="faq">
         <FAQ />
