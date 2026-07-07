@@ -23,6 +23,8 @@ import AuthModal from "./components/AuthModal/AuthModal";
 import ScrollToTop from "./components/ScrollToTop/ScrollToTop";
 import Error from "./components/Error/Error";
 import Privacy from "./components/Privacy/Privacy";
+// ஏற்கனவே உள்ள இம்போர்ட்டுகளுக்குக் கீழே இதையும் சேர்க்கவும்
+import Terms from "./components/Terms/Terms";
 
 import AdminPanel from "./admin/AdminPanel/AdminPanel";
 
@@ -210,8 +212,10 @@ export default function App() {
           />
         }
       />
-
-      <Route path="/privacy" element={<Privacy />} />
+<Route path="/privacy" element={<Privacy />} />
+      
+      {/* Terms of Service ரூட் சேர்த்துள்ளேன் */}
+      <Route path="/terms" element={<Terms />} />
 
       <Route
         path="*"

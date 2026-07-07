@@ -3,28 +3,20 @@ import { useTranslation } from "react-i18next";
 import { Building2, Sparkles, BadgeCheck } from "lucide-react";
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { supabase } from "../../api/supabaseClient";
 
 export default function Companies() {
   const { t } = useTranslation();
   const [companies, setCompanies] = useState([]);
 
-  // ✅ Updated to include the full API endpoint
   const API_URL = "https://jpbcenterback-production.up.railway.app/api/companies";
 
   const loadCompanies = async () => {
     try {
       const res = await axios.get(API_URL);
-      
-      console.log("API Response:", res.data);
-
-      // ✅ Safe parsing check: { success: true, data: [...] }
       if (res.data && res.data.success && Array.isArray(res.data.data)) {
         setCompanies(res.data.data);
       } else if (Array.isArray(res.data)) {
         setCompanies(res.data);
-      } else {
-        setCompanies([]);
       }
     } catch (err) {
       console.error("Error loading companies:", err);
@@ -37,14 +29,13 @@ export default function Companies() {
   }, []);
 
   return (
-    <section
-      id="companies"
-      className="relative overflow-hidden bg-[#F0F3FA] px-4 py-16"
-    >
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-[#F0F3FA] via-[#D5DEEF] to-[#B1C9EF]" />
+    <section id="companies" className="relative overflow-hidden bg-[#F0F3FA] px-4 py-16 sm:py-20">
+      {/* Background Gradient */}
+      <div className="absolute inset-0 bg-gradient-to-br from-[#F0F3FA] via-[#D5DEEF] to-[#B1C9EF]" />
 
       <div className="relative z-10 mx-auto max-w-6xl text-center">
-        <motion.p className="inline-flex items-center gap-2 rounded-full border border-[#638ECB]/30 bg-white/60 px-4 py-1.5 text-[11px] font-black uppercase tracking-[0.2em] text-[#395886]">
+        {/* Title Section */}
+        <motion.p className="inline-flex items-center gap-2 rounded-full border border-[#638ECB]/30 bg-white/60 px-4 py-1.5 text-[10px] sm:text-[11px] font-black uppercase tracking-[0.2em] text-[#395886]">
           <Sparkles size={13} />
           {t("trustedCompanies", "Trusted Companies")}
         </motion.p>
@@ -56,51 +47,45 @@ export default function Companies() {
           </span>
         </motion.h2>
 
-        {/* Added items-stretch to ensure equal height in the grid */}
-        <div className="mt-10 grid items-stretch gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
+        {/* Companies Grid */}
+        <div className="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
           {companies.length === 0 ? (
-            <p className="col-span-full text-gray-500">
-              No companies yet
-            </p>
+            <p className="col-span-full py-10 text-gray-500 italic">No companies available at the moment.</p>
           ) : (
             companies
-              .filter((c) => c && (c.id || c._id)) // ID checking
+              .filter((c) => c && (c.id || c._id))
               .map((c) => (
                 <motion.div
                   key={c.id || c._id}
-                  initial={{ opacity: 0, y: 25 }}
-                  whileInView={{ opacity: 1, y: 0 }}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
                   viewport={{ once: true }}
-                  /* Added flex flex-col h-full w-full for perfect alignment */
-                  className="group relative flex h-full w-full flex-col overflow-hidden rounded-[24px] border border-white/70 bg-white/55 p-5 shadow-[0_18px_45px_rgba(57,88,134,0.16)] backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:bg-white/80"
+                  className="group flex h-full w-full flex-col items-center justify-between rounded-[24px] border border-white/70 bg-white/55 p-4 shadow-[0_10px_25px_rgba(57,88,134,0.08)] backdrop-blur-xl transition-all duration-300 hover:-translate-y-2 hover:bg-white/80 hover:shadow-[0_20px_40px_rgba(57,88,134,0.15)]"
                 >
-                  <div className="mb-4 flex shrink-0 justify-center">
+                  {/* Logo Container */}
+                  <div className="mb-3 flex shrink-0 items-center justify-center">
                     {c.logo ? (
                       <img
                         src={c.logo}
                         alt={c.name}
-                        className="h-16 w-16 rounded-2xl border object-cover"
-                        onError={(e) => {
-                          e.target.src = "https://via.placeholder.com/80?text=Logo";
-                        }}
+                        className="h-14 w-14 sm:h-16 sm:w-16 rounded-2xl border bg-white object-contain p-1"
+                        onError={(e) => { e.target.src = "https://via.placeholder.com/80?text=Logo"; }}
                       />
                     ) : (
-                      <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-[#395886] via-[#638ECB] to-[#8AAEE0] text-white">
+                      <div className="flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-[#395886] to-[#638ECB] text-white">
                         <Building2 size={24} />
                       </div>
                     )}
                   </div>
 
-                  <p className="mb-2 break-words text-sm font-black text-[#395886]">
+                  {/* Company Name */}
+                  <p className="line-clamp-2 px-1 text-[11px] sm:text-[13px] font-black text-[#395886]">
                     {c.name || "Company"}
                   </p>
 
-                  {/* mt-auto pushes the badge to the absolute bottom perfectly */}
-                  <div className="mt-auto flex justify-center pt-2">
-                    <BadgeCheck
-                      size={15}
-                      className="text-[#638ECB]"
-                    />
+                  {/* Badge */}
+                  <div className="mt-3 flex justify-center">
+                    <BadgeCheck size={14} className="text-[#638ECB]" />
                   </div>
                 </motion.div>
               ))

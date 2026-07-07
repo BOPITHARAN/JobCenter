@@ -1,92 +1,93 @@
 import { Mail, Phone, MapPin, Clock, Building2 } from "lucide-react";
+import { motion } from "framer-motion";
 
 export default function Contact() {
   return (
-    <section className="bg-gradient-to-br from-[#F0F3FA] via-[#D5DEEF] to-[#B1C9EF] min-h-screen flex items-center justify-center px-4 py-12">
-      
-      <div className="w-full max-w-md sm:max-w-lg md:max-w-xl lg:max-w-2xl">
+    <section 
+      id="contact" 
+      className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#F0F3FA] px-4 py-10"
+      style={{ fontFamily: "'Outfit', sans-serif" }}
+    >
+      <div className="absolute inset-0 bg-gradient-to-br from-[#F0F3FA] via-[#D5DEEF] to-[#B1C9EF]" />
 
+      <div className="relative z-10 w-full max-w-lg">
         {/* HEADER */}
-        <h2 className="text-3xl sm:text-4xl font-black text-[#395886] text-center mb-10 tracking-wide">
+        <motion.h2 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-8 text-center text-3xl sm:text-4xl font-black tracking-tight text-[#395886]"
+        >
           Contact Us
-        </h2>
+        </motion.h2>
 
         {/* CARD */}
-        <div className="bg-white/90 backdrop-blur-md border border-white/40 rounded-3xl shadow-xl p-6 sm:p-8 space-y-6 transition-all duration-300 hover:shadow-2xl">
-
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="space-y-4 rounded-[28px] border border-white/60 bg-white/70 p-5 sm:p-8 shadow-xl backdrop-blur-xl"
+        >
           {/* COMPANY */}
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-[#EAF1FB] rounded-xl">
-              <Building2 className="text-[#395886]" size={22} />
+          <div className="flex items-center gap-3 mb-2">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#395886]/10 text-[#395886]">
+              <Building2 size={20} />
             </div>
-            <h3 className="text-xl sm:text-2xl font-bold text-[#395886]">
-              JobCenterPlus
-            </h3>
+            <div>
+              <h3 className="text-lg font-bold text-[#395886]">JobCenterPlus</h3>
+              <p className="text-xs font-semibold text-[#638ECB]">Support Center</p>
+            </div>
           </div>
 
+          <div className="h-px w-full bg-[#395886]/10" />
+
           {/* LOCATION */}
-          <div className="flex items-start gap-3">
-            <div className="p-2 bg-[#EAF1FB] rounded-xl">
-              <MapPin className="text-[#638ECB]" size={20} />
+          <div className="flex items-start gap-3 py-2">
+            <div className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#638ECB]/10 text-[#638ECB]">
+              <MapPin size={16} />
             </div>
-            <p className="text-sm sm:text-base text-gray-700 leading-relaxed">
+            <p className="text-sm text-[#395886]/80 leading-relaxed">
               No.203, A9 Road, Kilinochchi, Sri Lanka
             </p>
           </div>
 
-          {/* EMAIL (GMAIL DIRECT OPEN) */}
-          <a
-            href="https://mail.google.com/mail/?view=cm&fs=1&to=jobcenterpluskilinochchi0@gmail.com&su=Job%20Inquiry&body=Hello%20JobCenterPlus"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center justify-between gap-3 bg-[#F7F9FC] hover:bg-[#EAF1FB] p-4 rounded-xl transition-all duration-200 active:scale-95 hover:scale-[1.02] shadow-sm hover:shadow-md"
-          >
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-white rounded-lg shadow">
-                <Mail className="text-red-500" size={20} />
+          {/* EMAIL & WHATSAPP (Tap-friendly) */}
+          <div className="grid gap-3">
+            <a
+              href="https://mail.google.com/mail/?view=cm&fs=1&to=jobcenterpluskilinochchi0@gmail.com"
+              target="_blank"
+              className="flex items-center justify-between rounded-2xl border border-[#395886]/10 bg-white/50 p-4 transition-all hover:bg-white"
+            >
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-red-50 text-red-500">
+                  <Mail size={18} />
+                </div>
+                <span className="text-sm font-bold text-[#395886]">Email Support</span>
               </div>
-              <span className="text-sm sm:text-base font-semibold text-gray-800">
-                Send Email
-              </span>
-            </div>
-            <span className="text-xs text-gray-500">Open</span>
-          </a>
+            </a>
 
-          {/* WHATSAPP */}
-          <a
-            href="https://wa.me/94760602121"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center justify-between gap-3 bg-[#F7F9FC] hover:bg-[#EAF1FB] p-4 rounded-xl transition-all duration-200 active:scale-95 hover:scale-[1.02] shadow-sm hover:shadow-md"
-          >
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-white rounded-lg shadow">
-                <Phone className="text-green-500" size={20} />
+            <a
+              href="https://wa.me/94760602121"
+              target="_blank"
+              className="flex items-center justify-between rounded-2xl border border-[#395886]/10 bg-white/50 p-4 transition-all hover:bg-white"
+            >
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-green-50 text-green-500">
+                  <Phone size={18} />
+                </div>
+                <span className="text-sm font-bold text-[#395886]">WhatsApp Chat</span>
               </div>
-              <span className="text-sm sm:text-base font-semibold text-gray-800">
-                WhatsApp Chat
-              </span>
-            </div>
-            <span className="text-xs text-gray-500">Open</span>
-          </a>
+            </a>
+          </div>
 
-          {/* WORKING HOURS */}
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-[#EAF1FB] rounded-xl">
-              <Clock className="text-[#638ECB]" size={20} />
+          {/* HOURS */}
+          <div className="flex items-center gap-3 pt-2">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#638ECB]/10 text-[#638ECB]">
+              <Clock size={16} />
             </div>
-            <p className="text-sm sm:text-base text-gray-700">
+            <p className="text-xs font-bold text-[#395886]/80">
               Sat - Sun | 9:00 AM - 5:00 PM
             </p>
           </div>
-
-        </div>
-
-        {/* FOOTER */}
-        <p className="text-center text-xs text-gray-500 mt-6">
-          © {new Date().getFullYear()} JobCenterPlus. All rights reserved.
-        </p>
-
+        </motion.div>
       </div>
     </section>
   );
