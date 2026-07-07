@@ -1,19 +1,15 @@
 import { useState } from "react";
-import api from "../../api/api"; // ✅ FIXED IMPORT (IMPORTANT)
-
+import api from "../../api/api";
 import { GoogleLogin } from "@react-oauth/google";
 import { useTranslation } from "react-i18next";
-import { supabase } from "../../api/supabaseClient";
-
-import {
-  X,
-  Phone,
-  Sparkles,
-  CheckCircle2,
-  AlertCircle,
-  Loader2,
+import { 
+  X, 
+  Phone, 
+  Sparkles, 
+  CheckCircle2, 
+  AlertCircle, 
+  Loader2 
 } from "lucide-react";
-
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function AuthModal({ onClose = () => {}, setUser = () => {} }) {
@@ -23,13 +19,13 @@ export default function AuthModal({ onClose = () => {}, setUser = () => {} }) {
   const [loading, setLoading] = useState(false);
   const [popup, setPopup] = useState(null);
 
-  // 🔔 popup message
+  // 🔔 POPUP MESSAGE FUNCTION
   const showPopup = (type, message) => {
     setPopup({ type, message });
     setTimeout(() => setPopup(null), 2600);
   };
 
-  // 💾 save login
+  // 💾 SAVE LOGIN TO LOCALSTORAGE
   const saveLogin = (data) => {
     if (!data?.token || !data?.user) {
       throw new Error("Invalid login response");
@@ -40,7 +36,7 @@ export default function AuthModal({ onClose = () => {}, setUser = () => {} }) {
     setUser(data.user);
   };
 
-  // 🔁 redirect
+  // 🔁 REDIRECT BY ROLE
   const redirectByRole = (user) => {
     if (user?.role === "admin") {
       window.location.href = "/admin-dashboard";
@@ -49,7 +45,7 @@ export default function AuthModal({ onClose = () => {}, setUser = () => {} }) {
     }
   };
 
-  // 📱 PHONE LOGIN
+  // 📱 PHONE LOGIN HANDLER
   const handlePhoneLogin = async () => {
     const cleanPhone = phone.trim();
 
@@ -60,14 +56,9 @@ export default function AuthModal({ onClose = () => {}, setUser = () => {} }) {
 
     try {
       setLoading(true);
-
-      console.log("📡 PHONE LOGIN API CALL");
-
       const res = await api.post("/api/auth/phone", {
         phone: cleanPhone,
       });
-
-      console.log("✅ RESPONSE:", res.data);
 
       saveLogin(res.data);
       showPopup("success", t("auth.loginSuccess"));
@@ -77,7 +68,6 @@ export default function AuthModal({ onClose = () => {}, setUser = () => {} }) {
         redirectByRole(res.data.user);
       }, 700);
     } catch (err) {
-      console.error("❌ Login Error:", err);
       showPopup(
         "error",
         err.response?.data?.message || t("auth.phoneFailed")
@@ -87,7 +77,7 @@ export default function AuthModal({ onClose = () => {}, setUser = () => {} }) {
     }
   };
 
-  // 🌐 GOOGLE LOGIN
+  // 🌐 GOOGLE LOGIN HANDLER
   const handleGoogleLogin = async (credentialResponse) => {
     try {
       if (!credentialResponse?.credential) {
@@ -96,14 +86,9 @@ export default function AuthModal({ onClose = () => {}, setUser = () => {} }) {
       }
 
       setLoading(true);
-
-      console.log("📡 GOOGLE LOGIN API CALL");
-
       const res = await api.post("/api/auth/google", {
         token: credentialResponse.credential,
       });
-
-      console.log("✅ RESPONSE:", res.data);
 
       saveLogin(res.data);
       showPopup("success", t("auth.googleSuccess"));
@@ -113,7 +98,6 @@ export default function AuthModal({ onClose = () => {}, setUser = () => {} }) {
         redirectByRole(res.data.user);
       }, 700);
     } catch (err) {
-      console.error("❌ Google Login Error:", err);
       showPopup(
         "error",
         err.response?.data?.message || t("auth.googleFailed")
@@ -125,6 +109,7 @@ export default function AuthModal({ onClose = () => {}, setUser = () => {} }) {
 
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-[#395886]/50 p-4 backdrop-blur-xl">
+      {/* POPUP NOTIFICATION */}
       <AnimatePresence>
         {popup && (
           <motion.div
@@ -147,7 +132,7 @@ export default function AuthModal({ onClose = () => {}, setUser = () => {} }) {
         )}
       </AnimatePresence>
 
-      {/* MODAL */}
+      {/* MODAL CONTAINER */}
       <motion.div
         initial={{ opacity: 0, scale: 0.88, y: 35 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -157,27 +142,25 @@ export default function AuthModal({ onClose = () => {}, setUser = () => {} }) {
         {/* CLOSE BUTTON */}
         <button
           onClick={onClose}
-          className="absolute right-4 top-4 rounded-full bg-white p-2 shadow"
+          className="absolute right-4 top-4 rounded-full bg-white p-2 shadow transition hover:scale-105"
         >
           <X size={18} />
         </button>
 
-        {/* HEADER */}
+        {/* MODAL HEADER */}
         <div className="text-center">
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-r from-[#395886] to-[#8AAEE0] text-white">
             <Sparkles />
           </div>
-
           <h1 className="text-2xl font-black text-[#395886]">
             {t("auth.continue")}
           </h1>
         </div>
 
-        {/* PHONE INPUT */}
+        {/* PHONE INPUT SECTION */}
         <div className="mt-6">
           <label className="text-xs font-bold">{t("auth.phoneNumber")}</label>
-
-          <div className="mt-2 flex items-center gap-2 rounded-xl border p-3">
+          <div className="mt-2 flex items-center gap-2 rounded-xl border p-3 bg-white/50">
             <Phone size={18} />
             <input
               type="tel"
@@ -185,7 +168,7 @@ export default function AuthModal({ onClose = () => {}, setUser = () => {} }) {
               onChange={(e) =>
                 setPhone(e.target.value.replace(/\D/g, "").slice(0, 10))
               }
-              className="w-full outline-none"
+              className="w-full bg-transparent outline-none"
               placeholder={t("auth.phonePlaceholder")}
             />
           </div>
@@ -193,7 +176,7 @@ export default function AuthModal({ onClose = () => {}, setUser = () => {} }) {
           <button
             onClick={handlePhoneLogin}
             disabled={loading}
-            className="mt-4 w-full rounded-xl bg-[#395886] py-3 font-bold text-white"
+            className="mt-4 w-full rounded-xl bg-[#395886] py-3 font-bold text-white transition hover:bg-[#2d466b]"
           >
             {loading ? (
               <Loader2 className="mx-auto animate-spin" />
@@ -203,8 +186,8 @@ export default function AuthModal({ onClose = () => {}, setUser = () => {} }) {
           </button>
         </div>
 
-        {/* GOOGLE LOGIN */}
-        <div className="mt-5">
+        {/* GOOGLE LOGIN SECTION */}
+        <div className="mt-5 flex justify-center">
           <GoogleLogin
             onSuccess={handleGoogleLogin}
             onError={() =>

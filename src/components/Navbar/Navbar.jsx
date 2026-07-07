@@ -43,6 +43,14 @@ export default function Navbar({
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // 🚪 LOGOUT HANDLER
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    setUser(null);
+    window.location.reload(); 
+  };
+
   const goTo = (item) => {
     setActive(item.id);
     if (location.pathname !== "/") {
@@ -77,7 +85,12 @@ export default function Navbar({
             </div>
 
             <div className="flex items-center gap-2">
-              <NavButton text={user ? t("logout", "Logout") : t("login", "Login")} icon={user ? <LogOut size={16} /> : <LogIn size={16} />} onClick={user ? () => setUser(null) : openAuth} dark />
+              <NavButton 
+                text={user ? t("logout", "Logout") : t("login", "Login")} 
+                icon={user ? <LogOut size={16} /> : <LogIn size={16} />} 
+                onClick={user ? handleLogout : openAuth} 
+                dark 
+              />
               <button onClick={openAdmin} className="h-11 w-11 flex items-center justify-center rounded-2xl border border-[#395886]/20 text-[#395886]"><ShieldCheck size={20} /></button>
             </div>
           </div>
@@ -87,11 +100,10 @@ export default function Navbar({
       {/* 2. MOBILE TOP HEADER */}
       <div className={`fixed z-[998] flex items-center justify-between lg:hidden transition-all duration-300 ${isScrolled ? "top-3 left-3 right-3 rounded-2xl bg-white/80 px-4 py-2 shadow-lg border border-white/50" : "top-2 left-2 right-2 rounded-2xl bg-[#F0F3FA]/40 px-3 py-1.5 border border-white/30"}`}>
         <button onClick={() => goTo(navItems[0])} className="flex items-center gap-2 outline-none">
-          {/* Logo is now perfectly circular */}
           <img src={logo} alt="Logo" className="h-9 w-9 rounded-full object-cover shadow-sm aspect-square" />
           <h1 className="text-base font-black tracking-wide text-[#395886]">JobCenter+</h1>
         </button>
-        <button onClick={user ? () => setUser(null) : openAuth} className="h-9 w-9 flex items-center justify-center rounded-full bg-[#395886] text-white">
+        <button onClick={user ? handleLogout : openAuth} className="h-9 w-9 flex items-center justify-center rounded-full bg-[#395886] text-white">
           {user ? <LogOut size={15} /> : <User size={15} />}
         </button>
       </div>
