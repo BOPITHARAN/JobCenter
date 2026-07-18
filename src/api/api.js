@@ -1,7 +1,9 @@
 import axios from "axios";
 
 // URL-ஐச் சரியாகக் கையாளுதல்
-const BASE_URL = import.meta.env.VITE_DB_HOST || "https://jpbcenterback-production.up.railway.app";
+const BASE_URL =
+  import.meta.env.VITE_DB_HOST ||
+  "https://jpbcenterback-production-1b03.up.railway.app";
 const API_BASE_URL = BASE_URL.replace(/['"]/g, "");
 
 console.log("🔥 API BASE URL Configured:", API_BASE_URL);
