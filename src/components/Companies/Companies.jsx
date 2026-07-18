@@ -8,8 +8,7 @@ export default function Companies() {
   const { t } = useTranslation();
   const [companies, setCompanies] = useState([]);
 
-  const API_URL = "https://jpbcenterback-production.up.railway.app/api/companies";
-
+  const API_URL = "https://jpbcenterback-production-1b03.up.railway.app/api/companies";
   const loadCompanies = async () => {
     try {
       const res = await axios.get(API_URL);
