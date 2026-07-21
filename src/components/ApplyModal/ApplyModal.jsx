@@ -17,8 +17,8 @@ import {
   Loader2,
 } from "lucide-react";
 
-// --- API Configuration ---
-const API_BASE_URL = "https://jpbcenterback-production.up.railway.app";
+// API Configuration
+const API_BASE_URL = "https://jpbcenterback-production-1b03.up.railway.app";
 
 export default function ApplyModal({ job, onClose }) {
   // Get user info from local storage
