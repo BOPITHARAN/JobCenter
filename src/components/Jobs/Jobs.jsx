@@ -1,186 +1,250 @@
-import { useEffect, useState } from "react";
+// Drop-in Jobs component. Pass user={user} for immediate login/logout updates.
+// Set showToaster={false} when your app already has a global Toaster.
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { supabase } from "../../api/supabaseClient";
 import toast, { Toaster } from "react-hot-toast";
-
 import {
-  Clock,
-  MapPin,
-  Heart,
-  Building2,
   ArrowRight,
-  Share2,
+  BriefcaseBusiness,
+  Building2,
+  Check,
+  ChevronDown,
+  ChevronUp,
+  Heart,
+  Loader2,
+  MapPin,
+  RefreshCw,
+  Search,
+  Share2
 } from "lucide-react";
-
 import ApplyModal from "../ApplyModal/ApplyModal";
-
-// ---------------------------------------------
-// 📝 JOB CARD COMPONENT
-// ---------------------------------------------
-const JobCard = ({ job, isSaved, onSave, onApply, t }) => {
-  const [isExpanded, setIsExpanded] = useState(false);
-
-  const handleShare = async () => {
-    const shareData = {
-      title: job.title,
-      text: `Check out this ${job.title} job at ${job.company}!`,
-      url: window.location.href,
-    };
-    if (navigator.share) {
-      try { await navigator.share(shareData); } catch (err) { console.error(err); }
-    } else {
-      navigator.clipboard.writeText(window.location.href);
-      toast.success(t("linkCopied", "Link copied!"));
+const PAGE_SIZE = 8;
+const text = (value) => typeof value === "string" || typeof value === "number" ? String(value) : "";
+const skillsOf = (value) => (Array.isArray(value) ? value : typeof value === "string" ? value.split(",") : []).map(text).map((s) => s.trim()).filter(Boolean);
+const keyOf = (id) => String(id);
+function readStoredUser() {
+  try {
+    if (typeof window === "undefined") return null;
+    const value = JSON.parse(window.localStorage.getItem("user") || "null");
+    return value && typeof value === "object" && value.id != null ? value : null;
+  } catch {
+    return null;
+  }
+}
+function JobCard({ job, saved, saving, onSave, onApply, t }) {
+  const [expanded, setExpanded] = useState(false);
+  const [logoFailed, setLogoFailed] = useState(false);
+  const [sharing, setSharing] = useState(false);
+  const title = text(job.title) || t("jobTitle", "Job opportunity");
+  const company = text(job.company) || t("company", "Company");
+  const description = text(job.description);
+  const skills = skillsOf(job.skills);
+  const logo = text(job.logo || job.logo_url);
+  useEffect(() => setLogoFailed(false), [logo]);
+  const shareJob = async () => {
+    if (sharing) return;
+    setSharing(true);
+    const url = new URL(window.location.href);
+    url.hash = "jobs";
+    const message = `${title} \u2014 ${company}${job.location ? `
+${text(job.location)}` : ""}`;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title, text: message, url: url.href });
+      } else if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(`${message}
+${url.href}`);
+        toast.success(t("jobDetailsCopied", "Job details and link copied!"));
+      } else {
+        toast.error(t("shareUnavailable", "Sharing is unavailable in this browser. Please copy the page link."));
+      }
+    } catch (error) {
+      if (error?.name !== "AbortError") toast.error(t("shareFailed", "Unable to share. Please try again."));
+    } finally {
+      setSharing(false);
     }
   };
-
-  const skillsArray = job.skills ? (typeof job.skills === "string" ? job.skills.split(",").slice(0, 3) : job.skills.slice(0, 3)) : [];
-
-  return (
-    <article className="group relative flex min-h-[370px] flex-col overflow-hidden rounded-[28px] border border-[#D5DEEF] bg-white/80 p-5 shadow-[0_15px_40px_rgba(57,88,134,.12)] backdrop-blur-xl transition duration-500 hover:-translate-y-2 hover:border-[#638ECB] hover:bg-white">
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-[#F0F3FA] via-[#B1C9EF] to-[#638ECB] opacity-0 transition duration-700 group-hover:opacity-25" />
-      
-      <div className="relative z-10 flex flex-wrap items-start justify-between gap-2">
-        <div className="flex gap-2">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-[#F0F3FA] px-3 py-1.5 text-[11px] font-bold text-[#395886]/75">
-            <Clock size={12} /> <span>{job.days_left || t("new", "New")}</span>
-          </span>
-          <span className="rounded-full bg-[#D5DEEF] px-3 py-1.5 text-[11px] font-black text-[#395886] whitespace-nowrap">
-            {job.type || t("fullTime", "Full Time")}
-          </span>
+  return <article className="group flex h-full min-w-0 flex-col rounded-3xl border border-[#E0E8F3] bg-white p-5 shadow-sm transition-shadow hover:shadow-lg motion-reduce:transition-none">
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-[#E5ECF6] bg-[#F3F7FD] text-[#537BB0]">
+          {logo && !logoFailed ? <img src={logo} alt={`${company} logo`} loading="lazy" onError={() => setLogoFailed(true)} className="h-full w-full object-contain p-1.5" /> : <Building2 size={24} aria-hidden="true" />}
         </div>
-        <button onClick={handleShare} className="rounded-full bg-white p-1.5 text-[#395886] shadow-sm transition hover:bg-[#F0F3FA] hover:text-[#638ECB]">
-          <Share2 size={16} />
+        <button type="button" onClick={shareJob} disabled={sharing} aria-label={`${t("share", "Share")}: ${title}`} className="flex h-11 w-11 items-center justify-center rounded-xl text-[#6C83A0] hover:bg-[#F0F5FC] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#638ECB] disabled:opacity-50">
+          {sharing ? <Loader2 size={18} className="animate-spin motion-reduce:animate-none" /> : <Share2 size={18} />}
         </button>
       </div>
-
-      <div className="relative z-10 mt-5 flex h-14 w-14 overflow-hidden items-center justify-center rounded-2xl bg-gradient-to-r from-[#8AAEE0] via-[#638ECB] to-[#395886] text-white shadow-[0_14px_30px_rgba(57,88,134,.25)]">
-        {job.logo || job.logo_url ? <img src={job.logo || job.logo_url} alt={job.company} className="h-full w-full object-cover" /> : <Building2 size={22} />}
+      <p className="mt-5 break-words text-xs font-bold tracking-wide text-[#6A84A5]">{company}</p>
+      <h3 className="mt-1.5 break-words text-xl font-extrabold leading-snug text-[#28476F]">{title}</h3>
+      <div className="mt-3 flex flex-wrap gap-2">
+        {text(job.type) && <span className="rounded-lg bg-[#EDF3FC] px-2.5 py-1 text-xs font-semibold text-[#456A9B]">{text(job.type)}</span>}
+        {job.days_left != null && text(job.days_left) !== "" && <span className="rounded-lg bg-[#F5F7FA] px-2.5 py-1 text-xs text-[#63758C]">{typeof job.days_left === "number" ? job.days_left > 0 ? `${job.days_left} ${t("daysLeft", "days left")}` : job.days_left === 0 ? t("closesToday", "Closes today") : t("deadlinePassed", "Deadline passed") : text(job.days_left)}</span>}
       </div>
-
-      <p className="relative z-10 mt-4 text-xs font-bold uppercase tracking-[0.16em] text-[#638ECB]">{job.company || t("company", "Company")}</p>
-      <h3 className={`relative z-10 mt-2 text-lg font-black leading-7 text-[#395886] ${isExpanded ? "" : "line-clamp-2 min-h-[56px]"}`}>
-        {job.title || t("jobTitle", "Job Title")}
-      </h3>
-
-      {skillsArray.length > 0 && (
-        <div className="relative z-10 mt-2 flex flex-wrap gap-1.5">
-          {skillsArray.map((skill, index) => (
-            <span key={index} className="rounded-md bg-[#F0F3FA] px-2 py-1 text-[10px] font-bold text-[#395886]/70 uppercase tracking-wider">{skill.trim()}</span>
-          ))}
-        </div>
-      )}
-
-      <p className={`relative z-10 mt-2 text-sm font-medium text-[#395886]/80 ${isExpanded ? "h-auto whitespace-pre-line" : "line-clamp-3"}`}>
-        {job.description}
-      </p>
-
-      <p className="relative z-10 mt-2 flex items-start gap-2 text-sm font-semibold text-[#395886]/70">
-        <MapPin size={16} className="mt-0.5 shrink-0 text-[#638ECB]" />
-        <span>{job.location || "Sri Lanka"}</span>
-      </p>
-
-      <p className="relative z-10 mt-3 text-sm font-black text-[#638ECB]">{job.salary || t("negotiable", "Negotiable")}</p>
-
-      <button onClick={() => setIsExpanded(!isExpanded)} className="relative z-10 mt-3 self-start text-xs font-black uppercase tracking-wider text-[#395886] hover:text-[#638ECB]">
-        {isExpanded ? t("showLess", "Show Less ▲") : t("readMore", "Read More ▼")}
-      </button>
-
-      <div className="relative z-10 mt-auto pt-5 flex gap-2">
-        <button type="button" onClick={() => onSave(job.id)} className={`flex w-1/3 items-center justify-center rounded-2xl border px-2 py-3 text-sm font-black transition ${isSaved ? "border-[#638ECB] bg-[#D5DEEF] text-[#395886]" : "border-[#B1C9EF] bg-white/70 text-[#395886] hover:bg-[#F0F3FA]"}`}>
-          <Heart size={18} fill={isSaved ? "#395886" : "none"} />
+      <p className="mt-4 flex items-start gap-2 text-sm text-[#687F9C]"><MapPin size={16} className="mt-0.5 shrink-0" aria-hidden="true" /><span className="break-words">{text(job.location) || t("locationNotSpecified", "Location not specified")}</span></p>
+      <p className="mt-3 break-words text-sm font-bold text-[#365F92]">{text(job.salary) || t("salaryNotSpecified", "Salary not specified")}</p>
+      {skills.length > 0 && <div className="mt-4 flex flex-wrap gap-1.5">{(expanded ? skills : skills.slice(0, 3)).map((skill, index) => <span key={`${skill}-${index}`} className="max-w-full break-words rounded-md border border-[#E5ECF5] px-2 py-1 text-[11px] text-[#7286A0]">{skill}</span>)}{!expanded && skills.length > 3 && <span className="px-1 py-1 text-[11px] text-[#7286A0]">+{skills.length - 3}</span>}</div>}
+      {description && <p className={`mt-4 break-words text-sm leading-6 text-[#71839B] ${expanded ? "whitespace-pre-line" : "line-clamp-3"}`}>{description}</p>}
+      {(description || skills.length > 3) && <button type="button" onClick={() => setExpanded((value) => !value)} aria-expanded={expanded} className="mt-2 flex min-h-[44px] items-center gap-1 self-start rounded-lg text-xs font-bold text-[#456D9F] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#638ECB]">{expanded ? t("showLess", "Show less") : t("readMore", "Read more")}{expanded ? <ChevronUp size={15} /> : <ChevronDown size={15} />}</button>}
+      <div className="mt-auto flex gap-2 border-t border-[#EDF1F7] pt-4">
+        <button type="button" onClick={() => onSave(job)} disabled={saving} aria-pressed={saved} aria-label={`${saved ? t("unsaveJob", "Unsave job") : t("saveJob", "Save job")}: ${title}`} className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border transition-colors disabled:cursor-wait disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#638ECB] ${saved ? "border-[#B7CDE8] bg-[#EAF1FB] text-[#395F91]" : "border-[#DFE7F2] text-[#748BA7] hover:bg-[#F3F7FD]"}`}>
+          {saving ? <Loader2 size={18} className="animate-spin motion-reduce:animate-none" /> : <Heart size={19} fill={saved ? "currentColor" : "none"} />}
         </button>
-        <button type="button" onClick={() => onApply(job)} className="flex w-2/3 items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#638ECB] to-[#395886] px-4 py-3 text-sm font-black text-white shadow-[0_14px_30px_rgba(57,88,134,.25)] transition hover:scale-[1.02]">
-          <span className="truncate">{t("applyNow", "Apply Now")}</span>
-          <ArrowRight size={15} />
-        </button>
+        <button type="button" onClick={() => onApply(job)} className="flex min-h-[48px] min-w-0 flex-1 items-center justify-center gap-2 rounded-xl bg-[#355E93] px-3 py-2 text-sm font-bold text-white transition-colors hover:bg-[#284B78] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#638ECB]">{t("applyNow", "Apply now")}<ArrowRight size={16} className="shrink-0" aria-hidden="true" /></button>
       </div>
-    </article>
-  );
-};
-
-// ---------------------------------------------
-// MAIN JOBS COMPONENT
-// ---------------------------------------------
-export default function Jobs({ search }) {
+    </article>;
+}
+function Jobs({ search, user: suppliedUser, showToaster = true }) {
   const { t } = useTranslation();
+  const [storedUser, setStoredUser] = useState(readStoredUser);
+  const user = suppliedUser !== void 0 ? suppliedUser : storedUser;
+  const userId = user?.id;
+  const userRef = useRef(user);
+  userRef.current = user;
   const [jobs, setJobs] = useState([]);
   const [selectedJob, setSelectedJob] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [savedJobs, setSavedJobs] = useState([]);
-  const [visibleCount, setVisibleCount] = useState(8); 
-
-  const user = JSON.parse(localStorage.getItem("user") || "null");
-
+  const [loadError, setLoadError] = useState(false);
+  const [reload, setReload] = useState(0);
+  const [savedJobs, setSavedJobs] = useState(/* @__PURE__ */ new Set());
+  const [savedLoading, setSavedLoading] = useState(false);
+  const [savedReady, setSavedReady] = useState(false);
+  const [savedError, setSavedError] = useState(false);
+  const [savedReload, setSavedReload] = useState(0);
+  const [savingIds, setSavingIds] = useState(/* @__PURE__ */ new Set());
+  const pendingSaves = useRef(/* @__PURE__ */ new Set());
+  const [savedOnly, setSavedOnly] = useState(false);
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   useEffect(() => {
-    fetchJobs();
-    if (user) fetchSavedJobs();
+    const syncUser = () => setStoredUser(readStoredUser());
+    window.addEventListener("storage", syncUser);
+    window.addEventListener("focus", syncUser);
+    window.addEventListener("auth-changed", syncUser);
+    return () => {
+      window.removeEventListener("storage", syncUser);
+      window.removeEventListener("focus", syncUser);
+      window.removeEventListener("auth-changed", syncUser);
+    };
   }, []);
-
-  const fetchSavedJobs = async () => {
-    try {
-      const { data } = await supabase.from("saved_jobs").select("job_id").eq("user_id", user.id);
-      if (data) setSavedJobs(data.map(item => item.job_id));
-    } catch (err) { console.error(err); }
-  };
-
-  const fetchJobs = async () => {
-    try {
-      setLoading(true);
-      const { data } = await supabase.from("jobs").select("*").order("created_at", { ascending: false });
-      setJobs(data || []);
-    } catch (error) { console.error(error); } finally { setLoading(false); }
-  };
-
-  const saveJob = async (jobId) => {
-    if (!user) { toast.error(t("loginFirst", "Please login first!")); return; }
-    try {
-      const { error } = await supabase.from("saved_jobs").insert([{ user_id: user.id, job_id: jobId }]);
-      if (error && error.code !== '23505') throw error;
-      setSavedJobs((prev) => [...prev, jobId]);
-      toast.success(t("jobSaved", "Job saved successfully!"));
-    } catch (error) { toast.error(t("saveFailed", "Failed to save.")); }
-  };
-
-  // 🛡️ Apply logic with Login Check
-  const handleApplyClick = (job) => {
-    if (!user) {
-      toast.error(t("loginFirst", "Please login first!"));
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setLoadError(false);
+    (async () => {
+      try {
+        const { data, error } = await supabase.from("jobs").select("*").order("created_at", { ascending: false });
+        if (error) throw error;
+        if (!cancelled) setJobs((data || []).filter((job) => job?.id != null));
+      } catch {
+        if (!cancelled) setLoadError(true);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [reload]);
+  useEffect(() => {
+    let cancelled = false;
+    setSavedJobs(/* @__PURE__ */ new Set());
+    setSavedReady(false);
+    setSavedError(false);
+    setSelectedJob(null);
+    setSavedLoading(userId != null);
+    if (userId == null) {
+      setSavedOnly(false);
       return;
     }
-    setSelectedJob(job);
+    (async () => {
+      try {
+        const { data, error } = await supabase.from("saved_jobs").select("job_id").eq("user_id", userId);
+        if (error) throw error;
+        if (!cancelled) {
+          setSavedJobs(new Set((data || []).map((item) => keyOf(item.job_id))));
+          setSavedReady(true);
+        }
+      } catch {
+        if (!cancelled) setSavedError(true);
+      } finally {
+        if (!cancelled) setSavedLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [userId, savedReload]);
+  const keyword = text(search?.keyword).trim().toLowerCase();
+  const place = text(search?.location).trim().toLowerCase();
+  const filteredJobs = useMemo(() => jobs.filter((job) => {
+    const haystack = [job.title, job.company, job.description, ...skillsOf(job.skills)].map(text).join(" ").toLowerCase();
+    const matchesKeyword = keyword.split(/\s+/).filter(Boolean).every((term) => haystack.includes(term));
+    const matchesLocation = !place || place === "sri lanka" || text(job.location).toLowerCase().includes(place);
+    return matchesKeyword && matchesLocation && (!savedOnly || savedJobs.has(keyOf(job.id)));
+  }), [jobs, keyword, place, savedOnly, savedJobs]);
+  useEffect(() => setVisibleCount(PAGE_SIZE), [keyword, place, savedOnly]);
+  const currentUser = () => suppliedUser !== void 0 ? userRef.current : readStoredUser();
+  const requireUser = () => {
+    const account = currentUser();
+    if (suppliedUser === void 0) setStoredUser(account);
+    if (account?.id == null) {
+      toast.error(t("loginFirst", "Please login first!"));
+      return null;
+    }
+    return account;
   };
-
-  const filteredJobs = (jobs || []).filter((job) => {
-    if (!job) return false;
-    const keyword = search?.keyword?.trim().toLowerCase() || "";
-    const location = search?.location?.trim().toLowerCase() || "";
-    return (keyword === "" || job.title?.toLowerCase().includes(keyword)) && 
-           (location === "" || location === "sri lanka" || job.location?.toLowerCase().includes(location));
-  });
-
-  return (
-    <>
-      <Toaster position="top-center" toastOptions={{ style: { zIndex: 9999, marginTop: '80px', fontWeight: 'bold' } }} />
-      <section id="jobs" className="relative bg-[#F0F3FA] px-4 py-20">
+  const toggleSave = async (job) => {
+    const account = requireUser();
+    if (!account) return;
+    if (keyOf(account.id) !== keyOf(userId) || !savedReady) {
+      toast.error(t("savedNotReady", "Please wait for saved jobs to load, or use Retry."));
+      return;
+    }
+    const key = keyOf(job.id);
+    if (pendingSaves.current.has(key)) return;
+    const wasSaved = savedJobs.has(key);
+    pendingSaves.current.add(key);
+    setSavingIds(new Set(pendingSaves.current));
+    try {
+      const { error } = wasSaved ? await supabase.from("saved_jobs").delete().eq("user_id", account.id).eq("job_id", job.id) : await supabase.from("saved_jobs").insert([{ user_id: account.id, job_id: job.id }]);
+      if (error && (wasSaved || error.code !== "23505")) throw error;
+      if (keyOf(currentUser()?.id) !== keyOf(account.id)) return;
+      setSavedJobs((previous) => {
+        const next = new Set(previous);
+        if (wasSaved) next.delete(key);
+        else next.add(key);
+        return next;
+      });
+      toast.success(wasSaved ? t("jobRemoved", "Job removed from saved jobs.") : t("jobSaved", "Job saved successfully!"));
+    } catch {
+      toast.error(t("saveFailed", "Unable to update saved jobs. Please try again."));
+    } finally {
+      pendingSaves.current.delete(key);
+      setSavingIds(new Set(pendingSaves.current));
+    }
+  };
+  const apply = (job) => {
+    if (requireUser()) setSelectedJob(job);
+  };
+  const buttonStyle = "inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl border border-[#DAE5F3] bg-white px-4 py-2 text-sm font-bold text-[#426894] hover:bg-[#EDF3FC] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#638ECB]";
+  return <>
+      {showToaster && <Toaster position="top-center" containerStyle={{ top: 90, zIndex: 1e4 }} />}
+      <section id="jobs" aria-labelledby="jobs-heading" className="scroll-mt-28 bg-[#F5F8FD] px-4 py-14 sm:px-6 sm:py-20 lg:px-8">
         <div className="mx-auto max-w-7xl">
-          <h2 className="text-3xl font-black text-center text-[#395886] md:text-5xl">{t("recent", "Recent")} <span className="text-[#638ECB]">{t("jobs", "Jobs")}</span></h2>
-          <div className="mt-12 grid items-start gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {loading ? [...Array(4)].map((_, i) => <div key={i} className="h-[370px] bg-white/50 animate-pulse rounded-[28px]" />) : 
-            filteredJobs.slice(0, visibleCount).map((job) => (
-              <JobCard key={job.id} job={job} isSaved={savedJobs.includes(job.id)} onSave={saveJob} onApply={handleApplyClick} t={t} />
-            ))}
+          <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
+            <div><p className="text-xs font-bold uppercase tracking-[0.2em] text-[#7C96B7]">{t("nextOpportunity", "YOUR NEXT OPPORTUNITY")}</p><h2 id="jobs-heading" className="mt-3 text-3xl font-extrabold tracking-tight text-[#28476F] sm:text-4xl">{t("recent", "Recent")} <span className="text-[#638ECB]">{t("jobs", "Jobs")}</span></h2><p className="mt-3 text-sm text-[#7488A3]">{t("jobsIntro", "Explore opportunities that match your skills and ambitions.")}</p></div>
+            <div className="flex flex-wrap gap-2"><button type="button" aria-pressed={!savedOnly} onClick={() => setSavedOnly(false)} className={buttonStyle}>{!savedOnly && <Check size={15} />}{t("allJobs", "All jobs")}</button><button type="button" aria-pressed={savedOnly} onClick={() => {
+    if (requireUser()) setSavedOnly((value) => !value);
+  }} className={buttonStyle}><Heart size={15} fill={savedOnly ? "currentColor" : "none"} />{t("savedJobs", "Saved jobs")}{userId != null && savedReady ? ` (${savedJobs.size})` : ""}</button></div>
           </div>
-          {visibleCount < filteredJobs.length && (
-            <div className="mt-10 flex justify-center">
-              <button onClick={() => setVisibleCount(prev => prev + 8)} className="rounded-2xl border-2 border-[#638ECB] px-8 py-3 font-black text-[#395886] hover:bg-[#638ECB] hover:text-white transition">
-                {t("loadMore", "Load More Jobs")}
-              </button>
-            </div>
-          )}
+          {!loading && !loadError && <p role="status" className="mt-7 text-xs text-[#7C8FA8]">{filteredJobs.length} {t("matchingJobs", "matching jobs")}{keyword ? ` \xB7 \u201C${text(search?.keyword).trim()}\u201D` : ""}</p>}
+          {savedError && <div role="alert" className="mt-5 flex flex-wrap items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">{t("savedLoadFailed", "Saved jobs could not be loaded.")}<button type="button" className={buttonStyle} onClick={() => setSavedReload((n) => n + 1)}>{t("retry", "Retry")}</button></div>}
+          {loading || savedOnly && savedLoading ? <div role="status" aria-label={t("loadingJobs", "Loading jobs")} className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">{Array.from({ length: 4 }, (_, i) => <div key={i} aria-hidden="true" className="h-[420px] animate-pulse rounded-3xl border border-[#E1E9F4] bg-white p-5 motion-reduce:animate-none"><div className="h-14 w-14 rounded-2xl bg-[#EAF0F8]" /><div className="mt-6 h-4 w-2/3 rounded bg-[#EAF0F8]" /><div className="mt-4 h-6 rounded bg-[#EAF0F8]" /><div className="mt-6 h-24 rounded bg-[#F3F6FB]" /><div className="mt-10 h-12 rounded-xl bg-[#EAF0F8]" /></div>)}</div> : loadError ? <div role="alert" className="mt-8 rounded-3xl border border-[#E1E9F4] bg-white p-10 text-center"><p className="mb-4 text-[#526E91]">{t("jobsLoadFailed", "Unable to load jobs. Please try again.")}</p><button type="button" onClick={() => setReload((n) => n + 1)} className={buttonStyle}><RefreshCw size={16} />{t("retry", "Retry")}</button></div> : savedOnly && savedError ? null : filteredJobs.length === 0 ? <div className="mt-8 rounded-3xl border border-dashed border-[#CDDCEF] bg-white p-10 text-center"><Search size={30} className="mx-auto text-[#90A9C9]" aria-hidden="true" /><h3 className="mt-4 text-lg font-bold text-[#35567F]">{savedOnly ? t("noSavedMatches", "No saved jobs match this search") : t("noJobsFound", "No jobs found")}</h3><p className="mx-auto mt-2 max-w-md text-sm text-[#7A8FA9]">{savedOnly ? t("saveHint", "Save a job using its heart button, or change your search.") : t("searchHint", "Try a different keyword or location, or check back for new opportunities.")}</p>{savedOnly && <button type="button" onClick={() => setSavedOnly(false)} className={`${buttonStyle} mt-5`}>{t("allJobs", "All jobs")}</button>}</div> : <div className="mt-8 grid items-stretch gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">{filteredJobs.slice(0, visibleCount).map((job) => <JobCard key={job.id} job={job} saved={savedJobs.has(keyOf(job.id))} saving={savingIds.has(keyOf(job.id)) || savedLoading} onSave={toggleSave} onApply={apply} t={t} />)}</div>}
+          {!loading && !loadError && !(savedOnly && (savedLoading || savedError)) && visibleCount < filteredJobs.length && <div className="mt-9 text-center"><button type="button" onClick={() => setVisibleCount((count) => count + PAGE_SIZE)} className={`${buttonStyle} px-7`}><BriefcaseBusiness size={17} />{t("loadMore", "Load more jobs")}<ChevronDown size={16} /></button></div>}
         </div>
-        {selectedJob && <ApplyModal job={selectedJob} onClose={() => setSelectedJob(null)} />}
       </section>
-    </>
-  );
+      {selectedJob && userId != null && <ApplyModal job={selectedJob} onClose={() => setSelectedJob(null)} />}
+    </>;
 }
+export {
+  Jobs as default
+};
