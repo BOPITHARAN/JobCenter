@@ -1,143 +1,57 @@
-import {
-  MapPin,
-  Search,
-  Sparkles,
-  ArrowRight,
-} from "lucide-react";
-import { motion } from "framer-motion";
-import { useState } from "react";
-
-import heroDesktop from "../../assets/hero.png";
-import heroMobile from "../../assets/hero-mobile.png";
-
-export default function Hero({ onSearch = () => {}, jobs = [] }) {
-  const [keyword, setKeyword] = useState("");
-  const [location, setLocation] = useState("Sri Lanka");
-
-  const handleSearch = () => {
-    onSearch({
-      keyword: keyword.trim(),
-      location: location.trim(),
-    });
-
-    document.getElementById("jobs")?.scrollIntoView({
-      behavior: "smooth",
-    });
-  };
-
-  return (
-    // 🌟 pt-32 என்பது pt-20 ஆக குறைக்கப்பட்டுள்ளது. இது மொபைலில் அதிகப்படியான இடைவெளியைத் தடுக்கும்.
-    <section className="relative flex items-center pt-20 pb-12 sm:min-h-[85vh] sm:py-0 overflow-hidden">
-
-      {/* 📱 MOBILE BACKGROUND */}
-      <div
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat md:hidden"
-        style={{ backgroundImage: `url(${heroMobile})` }}
-      />
-
-      {/* 💻 DESKTOP BACKGROUND */}
-      <div
-        className="absolute inset-0 hidden bg-cover bg-[center_right] bg-no-repeat md:block"
-        style={{ backgroundImage: `url(${heroDesktop})` }}
-      />
-
-      {/* 🌟 OVERLAY - டெக்ஸ்ட் தெளிவாகத் தெரிய Contrast அதிகரிக்கப்பட்டுள்ளது */}
-      <div className="absolute inset-0 bg-white/75 md:bg-gradient-to-r md:from-white/95 md:via-white/80 md:to-transparent/10"></div>
-
-      {/* CONTENT */}
-      <div className="relative z-10 mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 sm:py-20 lg:px-8">
-        <div className="max-w-3xl">
-
-          {/* BADGE */}
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mb-6 inline-flex items-center gap-2 rounded-full border border-[#B1C9EF]/60 bg-white/90 px-4 py-2 text-xs font-black tracking-wider text-[#395886] shadow-sm backdrop-blur-md"
-          >
-            <Sparkles size={14} className="text-[#638ECB]" />
-            KILI PEOPLE KILINOCHCHI
-          </motion.div>
-
-          {/* TITLE - SEO Optimized H1 Tag */}
-          <motion.h1
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="max-w-3xl text-4xl font-black leading-tight text-[#395886] sm:text-5xl md:text-[64px]"
-          >
-            Find Your Next <br />
-            <span className="bg-gradient-to-r from-[#395886] via-[#638ECB] to-[#8AAEE0] bg-clip-text text-transparent drop-shadow-sm">
-              Dream Job
-            </span>
-          </motion.h1>
-
-          {/* SUBTITLE */}
-          <motion.p 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.2 }}
-            className="mt-6 max-w-xl text-sm font-bold leading-relaxed text-[#395886]/80 sm:text-lg"
-          >
-            Discover premium local and global jobs with one powerful career platform.
-          </motion.p>
-
-          {/* 🌟 SEARCH BOX - Mobile Touch Friendly Gaps */}
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="mt-10 max-w-3xl rounded-[28px] border border-[#D5DEEF]/80 bg-white/80 p-3 shadow-[0_20px_50px_rgba(57,88,134,0.12)] backdrop-blur-2xl sm:rounded-[32px] sm:p-4"
-          >
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-[1fr_1fr_160px] sm:gap-4">
-              <SearchInput
-                icon={<Search size={18} className="text-[#638ECB]" />}
-                label="What"
-                value={keyword}
-                setValue={setKeyword}
-                placeholder="Job title, keywords..."
-              />
-
-              <SearchInput
-                icon={<MapPin size={18} className="text-[#638ECB]" />}
-                label="Where"
-                value={location}
-                setValue={setLocation}
-                placeholder="Sri Lanka"
-              />
-
-              <button
-                onClick={handleSearch}
-                className="flex h-full min-h-[56px] items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#395886] via-[#638ECB] to-[#8AAEE0] px-4 font-black text-white shadow-[0_10px_25px_rgba(57,88,134,0.25)] transition-all duration-300 hover:scale-[1.02]"
-              >
-                <span>Search Jobs</span>
-                <ArrowRight size={16} />
-              </button>
+</div>
+          <div className="jcp-event-actions">
+            <div className="jcp-event-links">
+              <a className="jcp-event-primary" href={"https://wa.me/94760602121?text=" + encodeURIComponent("Hello JOB CENTER PLUS, I would like to attend the Kilinochchi Job Fair on 18 October 2026 as a job seeker. Please share registration details.")} target="_blank" rel="noopener noreferrer">Job seekers — Enquire <span aria-hidden="true">↗</span></a>
+              <a className="jcp-event-secondary" href={"https://wa.me/94760602121?text=" + encodeURIComponent("Hello JOB CENTER PLUS, our organization would like to book a stall/table at the Kilinochchi Job Fair on 18 October 2026. Please share availability and booking details.")} target="_blank" rel="noopener noreferrer">Employers — Book a stall <span aria-hidden="true">↗</span></a>
             </div>
-          </motion.div>
-
+            <span className="jcp-event-note">Enquiries open in WhatsApp</span>
+          </div>
+        </section>
+        <div className="jcp-topline"><span className="jcp-brand">JOB CENTER <b>PLUS</b><span className="jcp-brand-dot" /></span><span className="jcp-place">KILINOCHCHI · SRI LANKA</span></div>
+        <div className="jcp-layout">
+          <div className="jcp-copy">
+            <div className="jcp-eyebrow"><span /> LOCAL ROOTS. BIG POSSIBILITIES.</div>
+            <h1>Your next chapter<br />starts with the<br /><em>right opportunity.</em></h1>
+            <p className="jcp-intro">Find work that fits your skills and your ambition.<br className="jcp-desktop-break" /> Explore local and global opportunities with Job Center Plus.</p>
+            <div className="jcp-values"><span>✓ Career guidance</span><span>✓ Local & global jobs</span></div>
+          </div>
+          <div className="jcp-visual" aria-hidden="true">
+            <div className="jcp-orbit jcp-orbit-one" /><div className="jcp-orbit jcp-orbit-two" />
+            <span className="jcp-star">✦</span>
+            <div className="jcp-float"><span className="jcp-float-icon">↗</span><div>A fresh start.<br /><strong>A brighter future.</strong></div></div>
+            <div className="jcp-career-card">
+              <div className="jcp-card-head"><span className="jcp-card-icon">↗</span><span>YOUR CAREER JOURNEY</span><span className="jcp-card-dots">•••</span></div>
+              <h2>Big ambitions.<br />Real possibilities.</h2><p>Take the next step with confidence.</p>
+              <div className="jcp-step"><span>01</span><div><strong>Discover opportunities</strong><small>Find roles that match your skills</small></div><b>✓</b></div>
+              <div className="jcp-step"><span>02</span><div><strong>Make your next move</strong><small>Connect with your future employer</small></div><b>↗</b></div>
+              <div className="jcp-card-footer"><span className="jcp-mini-dot" /> YOUR POTENTIAL. YOUR PATH.</div>
+            </div>
+            <div className="jcp-location-pill"><span>•</span> Rooted in Kilinochchi. Looking ahead.</div>
+          </div>
         </div>
+        <div className="jcp-search-area">
+          <form className="jcp-search" role="search" aria-label="Search jobs" onSubmit={(event) => { event.preventDefault(); runSearch(); }}>
+            <label className="jcp-field"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" /><path d="m16 16 4 4" /></svg><span><span className="jcp-label">WHAT ARE YOU LOOKING FOR?</span><input name="keyword" type="search" aria-label="Job title or keyword" placeholder="Job title or keyword" value={keyword} onChange={(event) => setKeyword(event.target.value)} /></span></label>
+            <label className="jcp-field jcp-location"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true"><path d="M20 10c0 6-8 11-8 11S4 16 4 10a8 8 0 1 1 16 0Z" /><circle cx="12" cy="10" r="2.5" /></svg><span><span className="jcp-label">WHERE DO YOU WANT TO WORK?</span><input name="location" type="text" aria-label="Job location" placeholder="City or country" value={location} onChange={(event) => setLocation(event.target.value)} /></span></label>
+            <button className="jcp-submit" type="submit">Search jobs <span aria-hidden="true">↗</span></button>
+          </form>
+          <div className="jcp-bottom-row"><div className="jcp-quick"><span>Try searching:</span>{["Sales", "Accounts", "Driver", "Typing"].map((term) => (<button type="button" key={term} onClick={() => { setKeyword(term); runSearch(term); }}>{term}<span aria-hidden="true">↗</span></button>))}</div></div>
+        </div>
+        <div className="jcp-mission"><span className="jcp-mission-mark">+</span><p>A charitable initiative by <strong>Kili People</strong><span>Connecting people. Creating possibilities.</span></p></div>
       </div>
     </section>
   );
 }
 
-/* INPUT COMPONENT */
-function SearchInput({ icon, label, value, setValue, placeholder }) {
-  return (
-    <div className="flex items-center gap-3 rounded-2xl border border-[#D5DEEF]/80 bg-[#F0F3FA]/60 px-4 py-3 transition-colors focus-within:border-[#638ECB] focus-within:bg-white hover:border-[#B1C9EF]">
-      <div className="rounded-xl bg-white p-2.5 shadow-sm">{icon}</div>
+const heroStyles = `
+.jcp-event{position:relative;overflow:hidden;background:radial-gradient(ellipse at 80% 0%,#ffdcab 0%,transparent 55%),linear-gradient(115deg,#fff7eb,#fff0dd);border:1px solid #efd5b5;border-radius:25px;margin-bottom:48px;color:#4c2b19;box-shadow:0 15px 40px #b2711610;animation:jcp-enter .6s ease both}.jcp-event-main{display:grid;grid-template-columns:1.35fr 1fr;gap:35px;padding:32px 36px}.jcp-event-kicker{display:flex;align-items:center;gap:8px;color:#a54c0d;font-size:9px;font-weight:800;letter-spacing:2px}.jcp-event-kicker>span{width:7px;height:7px;background:#da6a13;border-radius:50%;box-shadow:0 0 0 4px #f9dfc4}.jcp-event h2{margin:13px 0 12px;font-size:42px;line-height:1.08;letter-spacing:-1.5px;font-weight:850}.jcp-event h2>span{color:#c35b0b}.jcp-event-copy>p{max-width:400px;font-size:12px;line-height:1.8;color:#826048;margin:0 0 16px}.jcp-event-host{font-size:9px;line-height:1.7;color:#8b6245;font-weight:600}.jcp-event-host>span{padding:0 5px}.jcp-event-details{align-self:center;padding:20px 23px;background:#ffffffb5;border:1px solid #fff;border-radius:17px;box-shadow:0 7px 25px #a9651010}.jcp-event-date{display:flex;gap:15px;align-items:center}.jcp-calendar{width:51px;flex-shrink:0;text-align:center;border-radius:10px;overflow:hidden;border:1px solid #efd6b9;background:white}.jcp-calendar>span{display:block;background:#ce670f;color:white;font-size:8px;font-weight:800;letter-spacing:2px;padding:4px}.jcp-calendar>strong{display:block;font-size:26px;line-height:1.3;padding:3px;color:#7c4218}.jcp-event-date>div:last-child>strong,.jcp-event-venue strong{display:block;font-size:15px;font-weight:750}.jcp-event-date>div:last-child>span,.jcp-event-venue div>span{display:block;font-size:11px;color:#8c6c51;margin-top:4px}.jcp-event-venue{display:flex;align-items:center;gap:16px;border-top:1px solid #eddfcf;margin-top:18px;padding-top:16px}.jcp-event-venue svg{width:23px;height:23px;color:#b9682b;margin:0 13px;flex-shrink:0}.jcp-event-call{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;border-top:1px solid #eddfcf;padding-top:14px;margin-top:16px;color:#8c6c51;font-size:10px;text-decoration:none}.jcp-event-call strong{color:#9d4b0e}.jcp-event-actions{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:18px 36px;background:#fffcf5a8;border-top:1px solid #efdabf}.jcp-event-links{display:flex;flex-wrap:wrap;gap:10px}.jcp-event-links a{display:flex;align-items:center;justify-content:center;gap:20px;border-radius:9px;padding:12px 17px;min-height:45px;font-size:11px;font-weight:750;text-decoration:none;transition:transform .2s,background .2s}.jcp-event-primary{background:#ae4b07;color:#fff;border:1px solid #ae4b07}.jcp-event-secondary{background:white;border:1px solid #ddb68e;color:#874410}.jcp-event-links a:hover{transform:translateY(-2px)}.jcp-event-primary:hover{background:#8f3d06}.jcp-event-note{font-size:9px;color:#956f4d}.jcp-event a:focus-visible{outline:3px solid #b85d1a;outline-offset:4px}
+@media(max-width:1000px){.jcp-event-main{padding:27px;gap:22px}.jcp-event h2{font-size:35px}.jcp-event-actions{padding:18px 27px;flex-wrap:wrap}.jcp-event-details{padding:18px}.jcp-event-date>div:last-child>strong,.jcp-event-venue strong{font-size:13px}}
+@media(max-width:767px){.jcp-event{border-radius:19px;margin-bottom:34px}.jcp-event-main{grid-template-columns:1fr;padding:23px 20px 20px;gap:20px}.jcp-event h2{font-size:35px;letter-spacing:-1px}.jcp-event-kicker{font-size:8px;letter-spacing:1.5px}.jcp-event-copy>p{font-size:12px;margin-bottom:12px}.jcp-event-host{font-size:8px}.jcp-event-details{padding:16px}.jcp-event-date>div:last-child>strong,.jcp-event-venue strong{font-size:13px}.jcp-event-actions{padding:16px 20px;display:block}.jcp-event-links{display:grid;grid-template-columns:1fr;gap:8px}.jcp-event-links a{font-size:11px;min-height:46px;padding:12px;justify-content:space-between;gap:8px}.jcp-event-note{display:block;text-align:center;margin-top:11px;font-size:9px}}
 
-      <div className="flex w-full flex-col">
-        <span className="text-[10px] font-black uppercase tracking-wider text-[#395886]/60">
-          {label}
-        </span>
-
-        <input
-          value={value}
-          onChange={(e) => setValue(e.target.value)}
-          placeholder={placeholder}
-          className="w-full bg-transparent text-sm font-bold text-[#395886] outline-none placeholder:text-[#395886]/50"
-        />
-      </div>
-    </div>
-  );
-}
+.jcp-hero{--ink:#203d63;--blue:#426ca6;--muted:#61758e;position:relative;isolation:isolate;overflow:hidden;background:radial-gradient(ellipse at 88% 26%,#d6e5fc 0,transparent 47%),linear-gradient(120deg,#fbfcff 0%,#f1f6ff 65%,#eaf2fe 100%);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;padding:94px 0 26px;line-height:1.5}
+.jcp-hero *{box-sizing:border-box}.jcp-hero button,.jcp-hero input{font:inherit}.jcp-shell{max-width:1240px;margin:auto;padding:0 40px}.jcp-topline{display:flex;justify-content:space-between;align-items:center;margin-bottom:50px}.jcp-brand{display:flex;align-items:center;gap:5px;font-size:13px;font-weight:850;letter-spacing:1px}.jcp-brand b{color:#6288bd}.jcp-brand-dot{width:7px;height:7px;border-radius:50%;background:#70a490;margin-left:5px}.jcp-place{font-size:10px;font-weight:700;letter-spacing:2px;color:#71869f}.jcp-layout{display:grid;grid-template-columns:1.2fr 1fr;gap:32px;align-items:center}.jcp-copy{position:relative;z-index:2;animation:jcp-enter .65s ease both}.jcp-eyebrow{display:flex;align-items:center;gap:9px;font-size:10px;letter-spacing:1.8px;font-weight:800;margin-bottom:23px;color:#597cab}.jcp-eyebrow>span{width:7px;height:7px;border-radius:50%;background:#5984bc;box-shadow:0 0 0 5px #e4edf9}.jcp-copy h1{font-size:clamp(40px,4.6vw,65px);line-height:1.08;letter-spacing:-2.8px;font-weight:800;margin:0}.jcp-copy h1 em{font-style:normal;color:#5b82b6}.jcp-intro{font-size:14px;line-height:1.85;max-width:490px;color:var(--muted);margin:25px 0 20px}.jcp-values{display:flex;flex-wrap:wrap;gap:22px;font-size:11px;font-weight:650;color:#54708e}.jcp-visual{height:360px;position:relative;display:flex;align-items:center;justify-content:center;animation:jcp-enter .8s ease both}.jcp-orbit{position:absolute;border:1px solid #b7cdeb80;width:370px;height:370px;border-radius:50%}.jcp-orbit-two{width:460px;height:460px;border-style:dashed;opacity:.55}.jcp-star{position:absolute;right:2px;top:13px;font-size:48px;color:#6f91c3}.jcp-career-card{position:relative;background:#ffffffeb;border:1px solid white;border-radius:22px;padding:25px 25px 0;width:342px;transform:rotate(-4deg);box-shadow:0 24px 65px #284b7520}.jcp-card-head{display:flex;align-items:center;gap:9px;font-size:8px;letter-spacing:1.3px;font-weight:800;color:#7c8da2}.jcp-card-icon{display:grid;place-items:center;width:32px;height:32px;background:#e8effb;color:#537aaf;border-radius:10px;font-size:22px}.jcp-card-dots{margin-left:auto;letter-spacing:2px}.jcp-career-card h2{font-size:27px;letter-spacing:-1px;line-height:1.15;margin:20px 0 9px;font-weight:800}.jcp-career-card>p{font-size:10px;color:#8190a4;margin:0 0 20px}.jcp-step{display:flex;align-items:center;gap:10px;border-top:1px solid #edf1f6;padding:15px 0}.jcp-step>span{font-size:10px;background:#f0f5fb;color:#7894b5;display:grid;place-items:center;border-radius:9px;width:30px;height:30px}.jcp-step strong{font-size:11px;display:block}.jcp-step small{display:block;font-size:9px;color:#8594a7;margin-top:3px}.jcp-step>b{margin-left:auto;font-size:12px;color:#64958b}.jcp-card-footer{margin:1px -25px 0;padding:13px 25px;background:#f5f8fd;border-radius:0 0 22px 22px;font-size:8px;font-weight:750;letter-spacing:1.2px;color:#7790b0;display:flex;align-items:center;gap:7px}.jcp-mini-dot{width:5px;height:5px;background:#86a994;border-radius:50%}.jcp-float{position:absolute;z-index:3;right:0;top:-5px;display:flex;align-items:center;gap:10px;background:#fff;padding:13px 19px;border-radius:13px;box-shadow:0 12px 35px #34567e18;font-size:10px;color:#7c8da5;transform:rotate(4deg)}.jcp-float strong{color:#35567f;font-size:12px}.jcp-float-icon{background:#e8f2ed;color:#4d8a75;font-size:25px;border-radius:9px;padding:0 9px}.jcp-location-pill{position:absolute;bottom:-10px;left:3px;border:1px solid #fff;background:#e6effc;padding:12px 17px;border-radius:12px;font-size:10px;color:#587aaa;box-shadow:0 10px 24px #34567e0d;transform:rotate(2deg)}.jcp-location-pill>span{font-size:17px;margin-right:7px}.jcp-search-area{position:relative;z-index:4;margin-top:44px}.jcp-search{display:grid;grid-template-columns:1.15fr 1fr 190px;gap:12px;background:white;border:1px solid #e3ebf5;padding:12px;border-radius:19px;box-shadow:0 18px 45px #375a8010}.jcp-field{min-width:0;display:flex;align-items:center;gap:15px;padding:10px 16px;border-radius:10px;border:1px solid transparent;transition:border-color .2s,background .2s}.jcp-field:focus-within{background:#f5f8fd;border-color:#88a9d7}.jcp-field>svg{width:21px;height:21px;flex-shrink:0;color:#6586b1}.jcp-field>span{display:block;min-width:0;width:100%}.jcp-label{display:block;font-size:8px;font-weight:800;letter-spacing:1.1px;color:#8696aa;margin-bottom:5px}.jcp-field input{min-width:0;width:100%;display:block;border:0;outline:0;color:#324e73;background:transparent;font-size:13px;font-weight:600;padding:0;line-height:1.5}.jcp-field input::placeholder{color:#74869e;opacity:1}.jcp-location{border-left-color:#e8edf5}.jcp-submit{min-height:60px;border:0;border-radius:12px;background:#345c91;color:white;padding:0 23px;display:flex;align-items:center;justify-content:space-between;gap:14px;font-size:13px!important;font-weight:750!important;cursor:pointer;transition:background .2s,transform .2s}.jcp-submit>span{font-size:24px;font-weight:400}.jcp-submit:hover{background:#244b7e;transform:translateY(-1px)}.jcp-hero button:focus-visible{outline:3px solid #7298cc;outline-offset:4px}.jcp-bottom-row{margin-top:18px}.jcp-quick{display:flex;align-items:center;flex-wrap:wrap;gap:8px}.jcp-quick>span{font-size:10px;color:#8594a8;margin-right:3px}.jcp-quick button{border:1px solid #dce6f3;border-radius:30px;padding:6px 12px;background:#ffffff70;font-size:10px;color:#5d7697;cursor:pointer;display:flex;gap:12px;align-items:center}.jcp-quick button:hover{background:white;border-color:#8ba9d0}.jcp-mission{border-top:1px solid #dfe8f4;margin-top:35px;padding-top:18px;display:flex;gap:10px;align-items:center}.jcp-mission-mark{font-size:22px;color:#7392b9}.jcp-mission p{margin:0;font-size:10px;color:#7c8ea5;display:flex;gap:4px;align-items:center;flex-wrap:wrap}.jcp-mission strong{font-weight:750;color:#587595}.jcp-mission p>span{margin-left:14px;padding-left:16px;border-left:1px solid #cedbec;color:#91a0b3}@keyframes jcp-enter{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@media(min-width:1500px){.jcp-hero{padding-top:110px;padding-bottom:45px}}
+@media(max-width:1000px){.jcp-shell{padding:0 28px}.jcp-layout{gap:10px;grid-template-columns:1.15fr 1fr}.jcp-career-card{width:290px;padding:20px 20px 0}.jcp-card-footer{margin-left:-20px;margin-right:-20px}.jcp-float{right:-5px;top:3px}.jcp-star{display:none}.jcp-orbit{width:300px;height:300px}.jcp-orbit-two{width:365px;height:365px}.jcp-location-pill{left:0;font-size:9px}.jcp-search{grid-template-columns:1fr 1fr 160px}.jcp-field{padding:10px;gap:10px}.jcp-label{font-size:7px;letter-spacing:.7px}}
+@media(max-width:767px){.jcp-hero{padding:84px 0 23px}.jcp-shell{padding:0 22px}.jcp-topline{margin-bottom:32px}.jcp-brand{font-size:11px;letter-spacing:.6px}.jcp-place{display:none}.jcp-layout{display:block}.jcp-eyebrow{font-size:8px;letter-spacing:1.4px;margin-bottom:22px}.jcp-copy h1{font-size:clamp(36px,8.9vw,54px);letter-spacing:-1.6px;line-height:1.12}.jcp-intro{font-size:13px;line-height:1.8;margin:21px 0 17px;max-width:430px}.jcp-desktop-break{display:none}.jcp-values{font-size:10px;gap:18px}.jcp-visual{display:none}.jcp-search-area{margin-top:28px}.jcp-search{grid-template-columns:1fr;padding:9px;gap:7px;border-radius:18px}.jcp-field{padding:13px 12px;min-height:64px;gap:13px;background:#f7f9fd;border:1px solid #ecf0f7;border-radius:10px}.jcp-label{font-size:8px;letter-spacing:.7px}.jcp-field input{font-size:16px}.jcp-submit{min-height:54px;margin-top:2px;justify-content:center;gap:15px}.jcp-bottom-row{margin-top:16px}.jcp-quick{gap:6px}.jcp-quick>span{width:100%;margin-bottom:3px}.jcp-quick button{font-size:10px;min-height:40px;padding:8px 11px}.jcp-mission{margin-top:25px;padding-top:17px}.jcp-mission p{font-size:9px}.jcp-mission p>span{width:100%;padding:0;margin:2px 0 0;border:0}.jcp-mission-mark{align-self:flex-start}}
+@media(prefers-reduced-motion:reduce){.jcp-hero *{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+`;
