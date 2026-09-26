@@ -1,4 +1,36 @@
-</div>
+import { useState } from "react";
+
+// Drop-in replacement. No extra packages, images or CSS files required.
+export default function Hero({ onSearch = () => {} }) {
+  const [keyword, setKeyword] = useState("");
+  const [location, setLocation] = useState("Sri Lanka");
+
+  function runSearch(nextKeyword = keyword) {
+    onSearch({ keyword: nextKeyword.trim(), location: location.trim() });
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    document.getElementById("jobs")?.scrollIntoView({
+      behavior: reducedMotion ? "auto" : "smooth", block: "start",
+    });
+  }
+
+  return (
+    <section className="jcp-hero" aria-label="Find your next job">
+      <style>{heroStyles}</style>
+      <div className="jcp-shell">
+        <section className="jcp-event" aria-labelledby="jcp-event-title">
+          <div className="jcp-event-main">
+            <div className="jcp-event-copy">
+              <div className="jcp-event-kicker"><span /> MEET. EXPLORE. APPLY.</div>
+              <h2 id="jcp-event-title">Kilinochchi<br /><span>Job Fair 2026</span></h2>
+              <p>Your next step starts here. Meet employers, explore opportunities and bring your CV.</p>
+              <div className="jcp-event-host">JOB CENTER PLUS <span>·</span> A charitable initiative by Kili People</div>
+            </div>
+            <div className="jcp-event-details">
+              <div className="jcp-event-date"><div className="jcp-calendar"><span>OCT</span><strong>18</strong></div><div><strong>18 October 2026</strong><span>10:00 AM – 5:00 PM</span></div></div>
+              <div className="jcp-event-venue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true"><path d="M20 10c0 6-8 11-8 11S4 16 4 10a8 8 0 1 1 16 0Z" /><circle cx="12" cy="10" r="2.5" /></svg><div><strong>Co-operative Hall</strong><span>Kilinochchi, Sri Lanka</span></div></div>
+              <a className="jcp-event-call" href="tel:+94760602121">Call for details <strong>076 060 2121 ↗</strong></a>
+            </div>
+          </div>
           <div className="jcp-event-actions">
             <div className="jcp-event-links">
               <a className="jcp-event-primary" href={"https://wa.me/94760602121?text=" + encodeURIComponent("Hello JOB CENTER PLUS, I would like to attend the Kilinochchi Job Fair on 18 October 2026 as a job seeker. Please share registration details.")} target="_blank" rel="noopener noreferrer">Job seekers — Enquire <span aria-hidden="true">↗</span></a>
