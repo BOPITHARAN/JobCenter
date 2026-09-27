@@ -1,14 +1,15 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { supabase } from "../../api/supabaseClient";
 import toast, { Toaster } from "react-hot-toast";
-import { Clock, MapPin, Heart, Building2, ArrowRight, Share2, ChevronDown, ChevronUp } from "lucide-react";
+import { Clock, MapPin, Heart, Building2, ArrowRight, Share2, ChevronDown, ChevronUp, Maximize2, X } from "lucide-react";
 import ApplyModal from "../ApplyModal/ApplyModal";
 
 // Keep the existing logo fields, but display their image as a full flyer.
 // If your job already has flyer_url, it takes priority. No schema change required.
 const JobCard = ({ job, isSaved, onSave, onApply, t }) => {
   const [isExpanded, setIsExpanded] = useState(false);
+  const flyerDialog = useRef(null);
   const [failedImage, setFailedImage] = useState(null);
   const flyer = job.flyer_url || job.logo || job.logo_url;
   const skillsArray = job.skills
@@ -31,27 +32,55 @@ const JobCard = ({ job, isSaved, onSave, onApply, t }) => {
 
   return (
     <article className="group flex h-full min-w-0 flex-col overflow-hidden rounded-[24px] border border-[#DFE7F2] bg-white shadow-[0_8px_30px_rgba(36,62,102,0.05)] transition duration-300 hover:border-[#AAC1E2] hover:shadow-[0_18px_45px_rgba(36,62,102,0.12)]">
-      {/* Flyer: contain preserves all text, including portrait and landscape posters. */}
-      <div className="relative border-b border-[#E7EDF5] bg-[#EDF2F8] p-3">
-        <div className="flex aspect-[4/5] w-full items-center justify-center overflow-hidden rounded-[16px] border border-[#E0E7F0] bg-white">
+      {/* A square, size-constrained frame balances portrait, square and wide flyers.
+          Absolute positioning prevents source image dimensions from changing card height. */}
+      <div className="border-b border-[#E7EDF5] bg-[#F1F5FA] p-3">
+        <div className="relative aspect-square w-full overflow-hidden rounded-[16px] border border-[#E0E7F0] bg-white">
           {flyer && failedImage !== flyer ? (
-            <img
-              src={flyer}
-              alt={`${job.title || t("jobTitle", "Job Title")} — ${job.company || t("company", "Company")}`}
-              className="h-full w-full object-contain"
-              loading="lazy"
-              decoding="async"
-              onError={() => setFailedImage(flyer)}
-            />
+            <button
+              type="button"
+              onClick={() => flyerDialog.current?.showModal()}
+              aria-label={t("viewFullFlyer", "View full flyer")}
+              className="absolute inset-0 block h-full w-full cursor-zoom-in p-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#638ECB]"
+            >
+              <img
+                src={flyer}
+                alt={`${job.title || t("jobTitle", "Job Title")} — ${job.company || t("company", "Company")}`}
+                className="block h-full w-full object-contain object-center"
+                loading="lazy"
+                decoding="async"
+                onError={() => setFailedImage(flyer)}
+              />
+            </button>
           ) : (
-            <div className="flex h-full w-full flex-col items-center justify-center gap-5 bg-gradient-to-br from-[#F4F7FC] to-[#DDE8F7] p-8 text-center">
-              <div className="flex h-20 w-20 items-center justify-center rounded-[24px] bg-white text-[#5279AF] shadow-sm"><Building2 size={34} /></div>
-              <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#6383AF]">{job.company || t("company", "Company")}</p>
-              <p className="text-2xl font-bold leading-snug text-[#243E66]">{job.title || t("jobTitle", "Job Title")}</p>
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-gradient-to-br from-[#F4F7FC] to-[#DDE8F7] p-6 text-center">
+              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-[20px] bg-white text-[#5279AF] shadow-sm"><Building2 size={30} /></div>
+              <p className="line-clamp-2 text-xs font-bold uppercase tracking-[0.12em] text-[#6383AF]">{job.company || t("company", "Company")}</p>
+              <p className="line-clamp-3 text-xl font-bold leading-snug text-[#243E66]">{job.title || t("jobTitle", "Job Title")}</p>
             </div>
           )}
         </div>
+        <div className="flex h-9 items-center justify-end">
+          {flyer && failedImage !== flyer && (
+            <button type="button" onClick={() => flyerDialog.current?.showModal()} className="inline-flex min-h-[36px] items-center gap-1.5 rounded-md px-1 text-xs font-semibold text-[#5275A5] hover:text-[#243E66] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#638ECB]">
+              <Maximize2 size={13} />{t("viewFullFlyer", "View full flyer")}
+            </button>
+          )}
+        </div>
       </div>
+
+      <dialog
+        ref={flyerDialog}
+        aria-label={t("viewFullFlyer", "View full flyer")}
+        onClick={(event) => { if (event.target === event.currentTarget) flyerDialog.current?.close(); }}
+        className="fixed inset-0 m-auto max-h-[92dvh] w-[92vw] max-w-5xl overflow-auto rounded-2xl border border-[#DDE5F0] bg-white p-0 text-[#243E66] shadow-2xl backdrop:bg-[#12243B]/80"
+      >
+        <div className="flex items-center justify-between gap-4 border-b border-[#E7EDF5] px-4 py-3">
+          <p className="min-w-0 truncate text-sm font-bold">{job.title || t("jobTitle", "Job Title")}</p>
+          <button type="button" autoFocus onClick={() => flyerDialog.current?.close()} aria-label={t("close", "Close")} className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#F1F5FA] text-[#395886] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#638ECB]"><X size={20} /></button>
+        </div>
+        {flyer && failedImage !== flyer && <img src={flyer} alt={`${job.title || t("jobTitle", "Job Title")} flyer`} className="mx-auto block h-auto max-h-[76dvh] w-auto max-w-full object-contain p-3" />}
+      </dialog>
 
       <div className="flex flex-1 flex-col p-5 sm:p-6">
         <div className="mb-5 flex flex-wrap items-center justify-between gap-2">
@@ -162,7 +191,7 @@ export default function Jobs({ search }) {
           <div className="grid items-stretch gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {loading ? [...Array(4)].map((_, i) => (
               <div key={i} aria-hidden="true" className="overflow-hidden rounded-[24px] border border-[#DFE7F2] bg-white p-3 motion-safe:animate-pulse">
-                <div className="aspect-[4/5] rounded-2xl bg-[#E7EDF5]" />
+                <div className="aspect-square rounded-2xl bg-[#E7EDF5]" />
                 <div className="space-y-4 p-3 pt-6"><div className="h-3 w-1/3 rounded bg-[#E7EDF5]" /><div className="h-6 w-4/5 rounded bg-[#E7EDF5]" /><div className="h-4 w-2/3 rounded bg-[#E7EDF5]" /><div className="h-12 rounded-xl bg-[#E7EDF5]" /></div>
               </div>
             )) : filteredJobs.slice(0, visibleCount).map((job) => (
